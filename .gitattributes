@@ -1,0 +1,3 @@
+/locale/en/ export-ignore
+/locale/*/*.cfg text eol=lf
+/.gitattributes export-ignore
