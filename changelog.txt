@@ -1,0 +1,6 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.0.1
+Date: 2021-07-08
+  Changes:
+    - Initial release
+    - Mostly (and roughly) translated into Japanese
