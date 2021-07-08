@@ -1,0 +1,11 @@
+#!/bin/sh
+
+PLAYER_DATA_JSON="$HOME/Library/Application Support/factorio/player-data.json"
+
+username=$(jq -rM '."service-username"' < "${PLAYER_DATA_JSON}")
+token=$(jq -rM '."service-token"' < "${PLAYER_DATA_JSON}")
+
+file_name="$(jq -rM .file_name < latest-version)"
+download_url="$(jq -rM .download_url < latest-version)"
+
+curl -sLo "${file_name}" "https://mods.factorio.com/${download_url}?username=${username}&token=${token}"
