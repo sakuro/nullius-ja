@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.2
+Date: 2021-07-09
+  Changes:
+    - Add missing translations for landfill tiles in the editor
+  Bugfixes:
+    - Fix inconsistent translation of "soda-ash"
+    - Fix misleading translation of "harvest"
+---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2021-07-08
   Changes:
