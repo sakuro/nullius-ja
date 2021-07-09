@@ -1,9 +1,8 @@
 #!/bin/sh
 
-PLAYER_DATA_JSON="$HOME/Library/Application Support/factorio/player-data.json"
-
-username=$(jq -rM '."service-username"' < "${PLAYER_DATA_JSON}")
-token=$(jq -rM '."service-token"' < "${PLAYER_DATA_JSON}")
+set -- $(./tools/api-credentials)
+username=$1
+token=$2
 
 file_name="$(jq -rM .file_name < latest-version)"
 download_url="$(jq -rM .download_url < latest-version)"
