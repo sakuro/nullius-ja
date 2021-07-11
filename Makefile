@@ -14,4 +14,4 @@ download-latest: latest-version
 	./tools/download-latest
 
 update-locale-en:
-	./tools/update-local-en
+	./tools/update-locale-en
