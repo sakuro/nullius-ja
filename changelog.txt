@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.3
+Date: 2021-07-11
+  Changes:
+    - Add missing translations for "Plastic PC/ABS"
+  Bugfixes:
+    - Fix translation of "fluid" from "液体" to "流体"
+    - Fix inconsistent translation of "Graphite" to "グラファイト"
+    - Fix InformaTron text
+---------------------------------------------------------------------------------------------------
 Version: 0.0.2
 Date: 2021-07-09
   Changes:
