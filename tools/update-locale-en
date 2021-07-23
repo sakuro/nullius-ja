@@ -1,6 +1,6 @@
 #!/bin/sh
 
-file_name="$(jq -rM .file_name < latest-version)"
+file_name="$(jq -rM .file_name < .latest-version)"
 
 for file in $(unzip -Z1 "${file_name}" | grep locale/en/.*\.cfg); do
   unzip -p "${file_name}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"

@@ -7,11 +7,12 @@ dist:
 clean:
 	-rm -v $(TRANSLATION_NAME)_*.zip
 
-latest-version:
+.latest-version:
 	NAME="$(NAME)" ./tools/latest-version > $@
 
-download-latest: latest-version
+.latest-downloaded: .latest-version
 	./tools/download-latest
+	touch $@
 
-update-locale-en:
+update-locale-en: .latest-downloaded
 	./tools/update-locale-en
