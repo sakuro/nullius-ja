@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.5
+Date: 2021-08-17
+  Changes:
+    - Consistently translate "smelting" to "製錬" and "refining" to "精練" respectively
+  Bugfixes:
+    - Fix some misconversion caused by typing errors (ex. 予想→輸送)
+---------------------------------------------------------------------------------------------------
 Version: 0.0.4
 Date: 2021-07-17
   Changes:
