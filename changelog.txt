@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.6
+Date: 2021-09-11
+  Changes:
+    - Translate new text from Nullius 1.1.8
+    - Use "アルミニウム" for "alminum" consistently
+    - Translate some untranslated phrase in misc.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.5
 Date: 2021-09-06
   Changes:
