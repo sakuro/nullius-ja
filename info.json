@@ -1,11 +1,11 @@
 {
   "name": "nullius-ja",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "factorio_version": "1.1",
   "title": "Japanese translation for Nullius",
   "author": "sakuro",
   "description": "This MOD provides Japanese translation to Nullius overhaul MOD",
   "dependencies": [
-    "nullius >= 1.1.6"
+    "nullius >= 1.1.8"
   ]
 }
