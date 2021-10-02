@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2021-10-03
+  Changes:
+    - Add/Update translations
+    - Transalate/Fix description of bio drones
+  Bugfix
+    - Fix broken formatting in description of iron oxidite
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2021-09-20
   Changes:
