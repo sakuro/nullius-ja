@@ -4,6 +4,8 @@ jobs:
   Create-Update-Locale-PR:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Fetch information about the latest version
         id: latest
         uses: ./.github/actions/latest-version
