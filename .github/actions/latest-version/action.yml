@@ -16,6 +16,8 @@ outputs:
     description: "SHA1 digest of the latest version of the MOD"
   version:
     description: "Latest version of the MOD"
+  full_name:
+    description: "Concatenation of MOD's name and version with '-'"
 runs:
   using: "docker"
   image: "Dockerfile"

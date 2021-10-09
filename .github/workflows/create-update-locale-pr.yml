@@ -12,17 +12,44 @@ jobs:
         with:
           mod_name: nullius
       - name: Download latest MOD
+        env:
+          FILE_NAME: ${{ steps.latest_version.outputs.file_name }}
+          DOWNLOAD_URL: ${{ steps.latest_version.outputs.download_url }}
+          USERNAME: ${{ secrets.SERVICE_USERNAME }}
+          TOKEN: ${{ secrets.SERVICE_TOKEN }}
         run: |
-          file_name="${{ steps.latest_version.outputs.file_name }}"
-          download_url="${{ steps.latest_version.outputs.download_url }}"
-          username="${{ secrets.SERVICE_USERNAME }}"
-          token="${{ secrets.SERVICE_TOKEN }}"
-          curl -sLo "${file_name}" "${download_url}?username=${username}&token=${token}"
-      - name: Update en locale files
+          curl -sLo "${FILE_NAME}" "${DOWNLOAD_URL}?username=${USERNAME}&token=${TOKEN}"
+      - name: Update locale/en files
+        env:
+          FILE_NAME: ${{ steps.latest_version.outputs.file_name }}
         run: |
-          file_name="${{ steps.latest_version.outputs.file_name }}"
-          for file in $(unzip -Z1 "${file_name}" | grep locale/en/.*\.cfg); do
-            unzip -p "${file_name}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"
+          for file in $(unzip -Z1 "${FILE_NAME}" | grep locale/en/.*\.cfg); do
+            unzip -p "${FILE_NAME}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"
           done
-          ls -l
-          git status
+          git status -sb
+      - name: Create a PR on any changes in locale/en
+        env:
+          FULL_NAME: ${{ steps.latest_version.outputs.full_name }}
+          PR_BRANCH: update-locale/en-from-${{ steps.latest_version.outputs.full_name }}
+          GIT_USER_NAME: github-actions[bot]
+          GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
+          git config user.name "$GIT_USER_NAME"
+          git config user.email "$GIT_USER_EMAIL"
+          git switch -c "${PR_BRANCH}"
+          git add locale/en
+          git commit -m "Update locale/en from ${FULL_NAME}"
+          git push origin "${PR_BRANCH}"
+          cat <<-EOF | jq -R | jq -s | jq 'map(split(":") | {(.[0]): .[1]}) | add' | \
+          curl \
+            --request POST \
+            --header 'Accept: application/vnd.github.v3+json' \
+            --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+            --url https://api.github.com/repos/${{ github.repository }}/pulls \
+            --data @-
+          title:Update locale/en from ${FULL_NAME}
+          body:This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}
+          head:${PR_BRANCH}
+          base:main
+          EOF
