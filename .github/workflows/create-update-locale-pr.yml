@@ -7,14 +7,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Fetch information about the latest version
-        id: latest
+        id: latest_version
         uses: ./.github/actions/latest-version
         with:
           mod_name: nullius
-      - name: Output result
-        run:
-          echo DOWNLOAD_URL=${{ steps.latest.outputs.download_url }}
-          echo FILE_NAME=${{ steps.latest.outputs.file_name }}
-          echo RELEASED_AT=${{ steps.latest.outputs.released_at }}
-          echo SHA1=${{ steps.latest.outputs.shat1 }}
-          echo VERSION=${{ steps.latest.outputs.version }}
+      - name: Download
+        run: |
+          file_name="${{ steps.latest_version.outputs.file_name }}"
+          download_url="${{ steps.latest_version.outputs.download_url }}"
+          username="${{ secrets.SERVICE_USERNAME }}"
+          token="${{ secrets.SERVICE_TOKEN }}"
+          curl -sLo "${file_name}" "${download_url}?username=${username}&token=${token}"
+          ls -l
