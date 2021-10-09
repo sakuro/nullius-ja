@@ -11,11 +11,18 @@ jobs:
         uses: ./.github/actions/latest-version
         with:
           mod_name: nullius
-      - name: Download
+      - name: Download latest MOD
         run: |
           file_name="${{ steps.latest_version.outputs.file_name }}"
           download_url="${{ steps.latest_version.outputs.download_url }}"
           username="${{ secrets.SERVICE_USERNAME }}"
           token="${{ secrets.SERVICE_TOKEN }}"
           curl -sLo "${file_name}" "${download_url}?username=${username}&token=${token}"
+      - name: Update en locale files
+        run: |
+          file_name="${{ steps.latest_version.outputs.file_name }}"
+          for file in $(unzip -Z1 "${file_name}" | grep locale/en/.*\.cfg); do
+            unzip -p "${file_name}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"
+          done
           ls -l
+          git status
