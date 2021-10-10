@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-          description: "New version to be released (without prefix 'v'"
+          description: "New version to be released (without prefix 'v')"
           required: true
 jobs:
   Create-Release-PR:
