@@ -1,3 +1,0 @@
-#!/bin/sh -x
-
-curl -s "https://mods.factorio.com/api/mods/${NAME}" | jq -rM '.releases | sort_by(.released_at) | reverse[0]'
