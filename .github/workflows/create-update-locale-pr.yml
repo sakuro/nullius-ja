@@ -35,10 +35,11 @@ jobs:
           GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
           [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
+          (rm -f info.json && jq -M '.dependencies=["${{ steps.latest_version.outputs.name }} >= ${{ steps.latest_version.outputs.version }}"]' > info.json) < info.json
           git config user.name "$GIT_USER_NAME"
           git config user.email "$GIT_USER_EMAIL"
           git switch -c "${PR_BRANCH}"
-          git add locale/en
+          git add locale/en info.json
           git commit -m "Update locale/en from ${FULL_NAME}"
           git push origin "${PR_BRANCH}"
           cat <<-EOF | jq -R | jq -s | jq 'map(split(":") | {(.[0]): .[1]}) | add' | \
