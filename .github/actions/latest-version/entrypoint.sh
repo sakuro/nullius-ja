@@ -6,6 +6,7 @@ set -- $(
     jq -rM '.releases | sort_by(.released_at) | reverse[0] | .download_url, .file_name, .released_at, .sha1, .version'
 )
 
+echo "::set-output name=mod_name::${mod_name}"
 echo "::set-output name=download_url::https://mods.factorio.com$1"
 echo "::set-output name=file_name::$2"
 echo "::set-output name=released_at::$3"

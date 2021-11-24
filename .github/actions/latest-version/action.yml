@@ -6,6 +6,8 @@ inputs:
     description: "Name of the MOD"
     required: true
 outputs:
+  mod_name:
+    description: "Name of the MOD, same as inputs.mod_name"
   download_url:
     description: "Download URL of the latest version of the MOD"
   file_name:
