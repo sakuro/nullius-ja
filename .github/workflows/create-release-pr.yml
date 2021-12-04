@@ -11,6 +11,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Configure git and gh CLI
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
       - name: Set current date
         id: current_date
         run: |
@@ -18,11 +22,7 @@ jobs:
       - name: Create release PR
         env:
           PR_BRANCH: release-v${{ github.event.inputs.version }}
-          GIT_USER_NAME: github-actions[bot]
-          GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
-          git config user.name "$GIT_USER_NAME"
-          git config user.email "$GIT_USER_EMAIL"
           git switch -c "${PR_BRANCH}"
           (rm -f info.json && jq -M '.version|="${{ github.event.inputs.version }}"' > info.json) < info.json
           (rm -f changelog.txt && sed -e '1i\
@@ -36,15 +36,4 @@ jobs:
           git add info.json changelog.txt
           git commit -m 'Bump to v${{ github.event.inputs.version }}'
           git push origin "${PR_BRANCH}"
-          cat <<-EOF | jq -R | jq -s | jq 'map(split(":") | {(.[0]): .[1]}) | add' | \
-          curl \
-            --request POST \
-            --header 'Accept: application/vnd.github.v3+json' \
-            --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
-            --url https://api.github.com/repos/${{ github.repository }}/pulls \
-            --data @-
-          title:Release v${{ github.event.inputs.version }}
-          body:This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}
-          head:${PR_BRANCH}
-          base:main
-          EOF
+          gh pr create --draft --title "Release v${{ github.event.inputs.version }}" --body "This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}"
