@@ -22,6 +22,7 @@ jobs:
       - name: Create release PR
         env:
           PR_BRANCH: release-v${{ github.event.inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GH_CLI_TOKEN }}
         run: |
           git switch -c "${PR_BRANCH}"
           (rm -f info.json && jq -M '.version|="${{ github.event.inputs.version }}"' > info.json) < info.json

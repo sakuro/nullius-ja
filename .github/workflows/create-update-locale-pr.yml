@@ -35,6 +35,7 @@ jobs:
         env:
           FULL_NAME: ${{ steps.latest_version.outputs.full_name }}
           PR_BRANCH: update-locale/en-from-${{ steps.latest_version.outputs.full_name }}
+          GITHUB_TOKEN: ${{ secrets.GH_CLI_TOKEN }}
         run: |
           [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
           (rm -f info.json && jq -M '.dependencies=["${{ steps.latest_version.outputs.mod_name }} >= ${{ steps.latest_version.outputs.version }}"]' > info.json) < info.json
