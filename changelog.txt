@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.8
+Date: 2022-02-11
+  Changes:
+    - Update ja translations for Nullius 1.2.15
+    - Companion Drones MOD stuff is left untranslated for now since it is not localized
+---------------------------------------------------------------------------------------------------
 Version: 0.2.7
 Date: 2021-11-30
   Bugfix:
