@@ -2,9 +2,9 @@
 Version: 0.2.14
 Date: 2022-06-11
   Changes:
-    - 
+    - Update ja translations for nullius 1.4.9
   Bugfix:
-    - 
+    - Restore accidentally dropped translation of Hydrogen chloride neutralization
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.13
 Date: 2022-06-04
