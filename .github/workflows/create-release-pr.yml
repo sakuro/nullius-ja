@@ -8,7 +8,7 @@ on:
 jobs:
   Create-Release-PR:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.inputs.version, "v") == false
+    if: startsWith(github.event.inputs.version, 'v') == false
     steps:
       - name: Checkout
         uses: actions/checkout@v2
