@@ -25,8 +25,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git tag "${{ steps.version.output.tag }}"
+          git tag "${{ steps.version.outputs.tag }}"
           git push --tags
-        	git archive --prefix "${{ steps.version.output.prefix }}" HEAD -o "${{ steps.version.output.archive }}"
+        	git archive --prefix "${{ steps.version.outputs.prefix }}" HEAD -o "${{ steps.version.outputs.archive }}"
           sed -ne '1d; /^-\{99\}$/q; s/^  //p' < changelog.txt \
-          gh release create "${{ steps.version.output.tag }}" -F=- -t "Release v${{ steps.version.output.version }}" "${{ steps.target.output.archive }}"
+          gh release create "${{ steps.version.outputs.tag }}" -F=- -t "Release v${{ steps.version.outputs.version }}" "${{ steps.target.outputs.archive }}"
