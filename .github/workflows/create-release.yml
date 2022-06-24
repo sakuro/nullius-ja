@@ -1,0 +1,33 @@
+name: Create release
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+jobs:
+  Create-Release:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release-v*.*.*')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure git and gh CLI
+        uses: git-actions/set-user@v1
+      - name: Detect target version
+        id: version
+        run: |
+          NAME=nullius-ja
+          VERSION=$(basename ${{ github.head_ref}} | sed -e 's/release-v//')
+          echo "::set-output name=version::${VERSION }"
+          echo "::set-output name=tag::v${VERSION}"
+          echo "::set-output name=archive::${NAME}_${VERSION}.zip"
+          echo "::set-output name=prefix::${NAME}_${VERSION}/"
+        run: |
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run:
+          git tag "${{ steps.version.output.tag }}"
+          git push --tags
+        	git archive --prefix "${{ steps.version.output.prefix }}" HEAD -o "${{ steps.version.output.archive }}"
+          sed -ne '1d; /^-\{99\}$/q; s/^  //p' < changelog.txt \
+          gh release create "${{ steps.version.output.tag }}" -F=- -t "Release v${{ steps.version.output.version }}" "${{ steps.target.output.archive }}"
