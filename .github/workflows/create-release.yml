@@ -6,7 +6,7 @@ on:
 jobs:
   Create-Release:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release-v*.*.*')
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release-v')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
