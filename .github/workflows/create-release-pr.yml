@@ -12,9 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure git and gh CLI
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+        uses: git-actions/set-user@v1
       - name: Set current date
         id: current_date
         run: |
