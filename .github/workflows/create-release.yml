@@ -21,11 +21,10 @@ jobs:
           echo "::set-output name=tag::v${VERSION}"
           echo "::set-output name=archive::${NAME}_${VERSION}.zip"
           echo "::set-output name=prefix::${NAME}_${VERSION}/"
-        run: |
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run:
+        run: |
           git tag "${{ steps.version.output.tag }}"
           git push --tags
         	git archive --prefix "${{ steps.version.output.prefix }}" HEAD -o "${{ steps.version.output.archive }}"
