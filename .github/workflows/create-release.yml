@@ -17,7 +17,7 @@ jobs:
         run: |
           NAME=nullius-ja
           VERSION=$(basename ${{ github.head_ref}} | sed -e 's/release-v//')
-          echo "::set-output name=version::${VERSION }"
+          echo "::set-output name=version::${VERSION}"
           echo "::set-output name=tag::v${VERSION}"
           echo "::set-output name=archive::${NAME}_${VERSION}.zip"
           echo "::set-output name=prefix::${NAME}_${VERSION}/"
