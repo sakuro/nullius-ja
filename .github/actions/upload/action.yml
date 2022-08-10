@@ -1,0 +1,24 @@
+name: "Upload a MOD to the MOD portal"
+description: "Upload a MOD to the Factorio MOD portal via API"
+author: "sakuro"
+inputs:
+  mod_name:
+    description: "Name of the MOD to upload"
+    required: true
+  mod_version:
+    description: "Version of the MOD to upload"
+    required: true
+  zip_name:
+    description: "Zip archive name of the MOD to be uploaded"
+    required: true
+  api_key:
+    description: "MOD portal API key for upload"
+    required: true
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.mod_name }}
+    - ${{ inputs.mod_version }}
+    - ${{ inputs.zip_name }}
+    - ${{ inputs.api_key }}

@@ -21,7 +21,7 @@ jobs:
           echo "::set-output name=tag::v${VERSION}"
           echo "::set-output name=archive::${NAME}_${VERSION}.zip"
           echo "::set-output name=prefix::${NAME}_${VERSION}/"
-      - name: Create release
+      - name: Create a release on GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -30,3 +30,10 @@ jobs:
           git archive --prefix "${{ steps.version.outputs.prefix }}" HEAD -o "${{ steps.version.outputs.archive }}"
           sed -ne '1d; /^-\{99\}$/q; s/^  //p' < changelog.txt \
           gh release create "${{ steps.version.outputs.tag }}" -F=- -t "Release v${{ steps.version.outputs.version }}" "${{ steps.target.outputs.archive }}"
+      - name: Upload the MOD to the MOD portal
+        uses: ./.github/actions/upload
+        with:
+          mod_name: nullius-ja
+          mod_version: "${{ steps.version.outputs.version }}"
+          zip_name: "${{ steps.version.outputs.archive }}"
+          api_key: ${{ secrets.MOD_PORTAL_API_KEY }}
