@@ -14,31 +14,22 @@ jobs:
         with:
           mod_name: nullius
       - name: Download latest MOD
-        env:
-          FILE_NAME: ${{ steps.latest_version.outputs.file_name }}
-          DOWNLOAD_URL: ${{ steps.latest_version.outputs.download_url }}
-          USERNAME: ${{ secrets.SERVICE_USERNAME }}
-          TOKEN: ${{ secrets.SERVICE_TOKEN }}
         run: |
-          curl -sLo "${FILE_NAME}" "${DOWNLOAD_URL}?username=${USERNAME}&token=${TOKEN}"
+          curl -sLo "${{ steps.latest_version.outputs.file_name }}" "${{ steps.latest_version.outputs.download_url }}?username=${{ secrets.SERVICE_USERNAME }}&token=${{ secrets.SERVICE_TOKEN }}"
       - name: Update locale/en files
-        env:
-          FILE_NAME: ${{ steps.latest_version.outputs.file_name }}
         run: |
-          for file in $(unzip -Z1 "${FILE_NAME}" | grep locale/en/.*\.cfg); do
-            unzip -p "${FILE_NAME}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"
+          for file in $(unzip -Z1 "${{ steps.latest_version.outputs.file_name }}" | grep locale/en/.*\.cfg); do
+            unzip -p "${{ steps.latest_version.outputs.file_name }}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"
           done
           git status -sb
       - name: Create a PR on any changes in locale/en
         env:
-          FULL_NAME: ${{ steps.latest_version.outputs.full_name }}
-          PR_BRANCH: update-locale/en-from-${{ steps.latest_version.outputs.full_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
           (rm -f info.json && jq -M '.dependencies=["${{ steps.latest_version.outputs.mod_name }} >= ${{ steps.latest_version.outputs.version }}"]' > info.json) < info.json
-          git switch -c "${PR_BRANCH}"
+          git switch -c "update-locale/en-from-${{ steps.latest_version.outputs.full_name }}"
           git add locale/en info.json
-          git commit -m "Update locale/en from ${FULL_NAME}"
-          git push origin "${PR_BRANCH}"
-          gh pr create --draft --title "Update locale/en from ${FULL_NAME}" --body "This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}"
+          git commit -m "Update locale/en from ${{ steps.latest_version.outputs.full_name }}"
+          git push origin "update-locale/en-from-${{ steps.latest_version.outputs.full_name }}"
+          gh pr create --draft --title "Update locale/en from ${{ steps.latest_version.outputs.full_name }}" --body "This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}"
