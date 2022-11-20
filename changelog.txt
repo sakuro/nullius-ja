@@ -2,9 +2,9 @@
 Version: 0.4.1
 Date: 2022-11-20
   Changes:
-    - 
-  Bugfix:
-    - 
+    - Update ja translations for nullius 1.5.18
+    - Add translation of mod's title and description
+    - Add optional dependency to informatron
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.0
 Date: 2022-11-19
