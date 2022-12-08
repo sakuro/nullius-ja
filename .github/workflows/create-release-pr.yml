@@ -17,7 +17,7 @@ jobs:
       - name: Set current date
         id: current_date
         run: |
-          echo "name=date::$(date +'%Y-%m-%d')" >> "${GITHUB_OUTPUT}"
+          echo "date=$(date +'%Y-%m-%d')" >> "${GITHUB_OUTPUT}"
       - name: Create release PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
