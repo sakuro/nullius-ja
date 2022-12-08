@@ -17,10 +17,10 @@ jobs:
         run: |
           NAME=nullius-ja
           VERSION=$(basename ${{ github.head_ref}} | sed -e 's/release-v//')
-          echo "::set-output name=version::${VERSION}"
-          echo "::set-output name=tag::v${VERSION}"
-          echo "::set-output name=archive::${NAME}_${VERSION}.zip"
-          echo "::set-output name=prefix::${NAME}_${VERSION}/"
+          echo "name=version::${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "name=tag::v${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "name=archive::${NAME}_${VERSION}.zip" >> "${GITHUB_OUTPUT}"
+          echo "name=prefix::${NAME}_${VERSION}/" >> "${GITHUB_OUTPUT}"
       - name: Create a release on GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
