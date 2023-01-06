@@ -2,9 +2,12 @@
 Version: 0.4.2
 Date: 2023-01-06
   Changes:
-    - 
+    - Update ja translation
+    - Replace set-output with redirection in GH actions
+    - Revert translation of mod's title and description
   Bugfix:
-    - 
+    - Move some new equipment translations to correct section
+    - Fix translation of chloro-
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 2022-11-20
