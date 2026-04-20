@@ -1,0 +1,146 @@
+name: Release Validation
+
+# This workflow validates release PRs before they are merged.
+# It performs comprehensive checks on version, dependencies, and release readiness.
+
+env:
+  MOD_NAME: ${{ github.event.repository.name }}
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-release:
+    # Only run for release branches
+    if: startsWith(github.head_ref, 'release-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # Required for git tag push
+
+    environment: release   # Links to MOD Portal API key in protected environment
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Extract version from branch name
+      id: version
+      env:
+        BRANCH_NAME: ${{ github.head_ref }}
+      run: |
+        VERSION=${BRANCH_NAME#release-v}
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Validate version format
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        if ! echo "$VERSION" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          echo "❌ Error: Version must be in format x.y.z (e.g., 1.0.0)"
+          echo ""
+          echo "Provided version: $VERSION"
+          exit 1
+        fi
+        echo "✅ Version format is valid: $VERSION"
+
+    - name: Verify version consistency
+      env:
+        EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        FILE_VERSION="$(jq -r '.version' info.json)"
+        if [ "$FILE_VERSION" != "$EXPECTED_VERSION" ]; then
+          echo "❌ Error: Version mismatch. File: $FILE_VERSION, Expected: $EXPECTED_VERSION"
+          exit 1
+        fi
+        echo "✅ Version consistency verified: $FILE_VERSION"
+
+    - name: Check if git tag already exists
+      run: |
+        if git tag | grep -q "^${{ steps.version.outputs.tag }}$"; then
+          if [ "${{ github.event.action }}" != "synchronize" ]; then
+            echo "❌ Error: Git tag ${{ steps.version.outputs.tag }} already exists"
+            echo "This should only happen if the tag was created outside the release process"
+            exit 1
+          else
+            echo "Tag ${{ steps.version.outputs.tag }} exists and will be updated to latest commit"
+          fi
+        fi
+
+    - name: Check for misconfigured FACTORIO_API_KEY
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Check if FACTORIO_API_KEY exists at repository level (incorrect location)
+        if gh api repos/${{ github.repository }}/actions/secrets --jq '.secrets[].name' | grep -q "^FACTORIO_API_KEY$"; then
+          echo "❌ Error: FACTORIO_API_KEY is misconfigured"
+          echo ""
+          echo "The secret is defined at repository level, but it should be in the 'release' environment."
+          echo ""
+          echo "To fix this:"
+          echo "1. Go to https://github.com/${{ github.repository }}/settings/secrets/actions"
+          echo "2. Delete the repository-level FACTORIO_API_KEY secret"
+          echo "3. Go to https://github.com/${{ github.repository }}/settings/environments"
+          echo "4. Click on 'release' environment and add FACTORIO_API_KEY there"
+          echo ""
+          echo "This ensures the secret is only accessible to release workflows with proper protection."
+          exit 1
+        fi
+
+    - name: Validate FACTORIO_API_KEY exists
+      run: |
+        if [ -z "${{ secrets.FACTORIO_API_KEY }}" ]; then
+          echo "❌ Error: FACTORIO_API_KEY secret is not configured in release environment"
+          echo ""
+          echo "To fix this:"
+          echo "1. Generate an API key at https://factorio.com/profile"
+          echo "2. Go to https://github.com/${{ github.repository }}/settings/environments"
+          echo "3. Click on 'release' environment (create if it doesn't exist)"
+          echo "4. Add environment secret: FACTORIO_API_KEY with your API key"
+          echo ""
+          echo "Note: The secret must be in the 'release' environment for proper security."
+          echo "This PR cannot be merged until the secret is configured."
+          exit 1
+        fi
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+
+    - name: Validate changelog.txt format
+      run: bundle exec factorix mod changelog check --release
+
+    - name: Set git user for tag update
+      if: github.event.action == 'synchronize'  # When new commits are pushed to PR
+      uses: git-actions/set-user@v1
+
+    - name: Update release tag to latest commit
+      if: github.event.action == 'synchronize'  # When new commits are pushed to PR
+      run: |
+        echo "Updating tag v${{ steps.version.outputs.version }} to latest commit"
+
+        # Force update the tag to current HEAD
+        git tag -fa "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
+
+        # Force push the updated tag
+        git push origin "v${{ steps.version.outputs.version }}" --force
+
+        echo "🏷️ Tag v${{ steps.version.outputs.version }} updated to commit $(git rev-parse --short HEAD)"
+
+    - name: Release validation summary
+      run: |
+        echo "✅ Release validation passed for v${{ steps.version.outputs.version }}"
+        echo "- Version format is valid"
+        echo "- Version consistency verified"
+        if [ "${{ github.event.action }}" == "synchronize" ]; then
+          echo "- Git tag updated to latest commit"
+        else
+          echo "- Git tag validated"
+        fi
+        echo "- FACTORIO_API_KEY is configured"
+        echo "- changelog.txt is properly formatted"
+        echo "- Quality checks handled by CI workflow"

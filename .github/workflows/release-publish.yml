@@ -1,0 +1,99 @@
+name: Release Publish
+
+# This workflow handles the actual MOD publishing after PR merge.
+# Most validations are already performed by the Release Validation workflow.
+
+env:
+  MOD_NAME: ${{ github.event.repository.name }}
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  publish-release:
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # Required for GitHub Release creation
+
+    environment: release   # Links to MOD Portal API key in protected environment
+
+    steps:
+    - name: Extract version from branch name
+      id: version
+      env:
+        BRANCH_NAME: ${{ github.head_ref }}
+      run: |
+        VERSION=${BRANCH_NAME#release-v}
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Checkout release tag
+      uses: actions/checkout@v5
+      with:
+        ref: ${{ steps.version.outputs.tag }}
+        fetch-depth: 0
+
+    - name: Verify version consistency
+      env:
+        EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        FILE_VERSION="$(jq -r '.version' info.json)"
+        if [ "$FILE_VERSION" != "$EXPECTED_VERSION" ]; then
+          echo "❌ Error: Version mismatch. File: $FILE_VERSION, Expected: $EXPECTED_VERSION"
+          exit 1
+        fi
+        echo "✅ Version consistency verified: $FILE_VERSION"
+
+    - name: Set git user
+      uses: git-actions/set-user@v1
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+
+    - name: Extract changelog for this version
+      id: changelog
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        # Extract changelog content for this version and convert to markdown
+        bundle exec factorix mod changelog extract --version "$VERSION" \
+          | awk '
+            /^Version:/ { next }
+            /^  Date:/ { next }
+            /^  [A-Za-z].*:$/ { if (seen++) print ""; sub(/^  /, ""); sub(/:$/, ""); print "### " $0; next }
+            /^    - / { sub(/^    /, ""); print; next }
+          ' > /tmp/changelog_md
+
+        # Output as multiline string
+        {
+          echo "content<<EOF"
+          cat /tmp/changelog_md
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Build and upload MOD to Factorio MOD portal
+      env:
+        FACTORIO_API_KEY: ${{ secrets.FACTORIO_API_KEY }}
+      run: bundle exec rake release
+
+    - name: Create GitHub Release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Create release with changelog and MOD archive
+        ARCHIVE_NAME="${{ env.MOD_NAME }}_${{ steps.version.outputs.version }}.zip"
+        gh release create "${{ steps.version.outputs.tag }}" \
+          --title "${{ env.MOD_NAME }} ${{ steps.version.outputs.tag }}" \
+          --notes "${{ steps.changelog.outputs.content }}" \
+          "dist/$ARCHIVE_NAME"
+
+    - name: Post-release summary
+      run: |
+        echo "🎉 Release ${{ steps.version.outputs.tag }} published successfully!"
+        echo "- MOD built from tagged commit and published to Factorio MOD portal"
+        echo "- GitHub release created with changelog and assets"

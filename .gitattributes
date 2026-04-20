@@ -3,4 +3,13 @@
 /.gitattributes export-ignore
 /.github/ export-ignore
 /.gitignore export-ignore
-/Makefile export-ignore
+/bin/ export-ignore
+/references/ export-ignore
+/doc/ export-ignore
+/AGENTS.md export-ignore
+/CLAUDE.md export-ignore
+/Gemfile export-ignore
+/Gemfile.lock export-ignore
+/Rakefile export-ignore
+/aqua.yaml export-ignore
+/mise.toml export-ignore

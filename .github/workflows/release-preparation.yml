@@ -1,0 +1,127 @@
+name: Release Preparation
+
+# This workflow only handles file updates for release preparation.
+# All validations are performed by the Release Validation workflow on PR creation.
+
+env:
+  MOD_NAME: ${{ github.event.repository.name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  create-release-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # Required for git push (branch and tag creation)
+      pull-requests: write # Required for PR creation
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Validate version format
+      env:
+        VERSION: ${{ github.event.inputs.version }}
+      run: |
+        if ! echo "$VERSION" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          echo "❌ Error: Version must be in format x.y.z (e.g., 1.0.0)"
+          echo ""
+          echo "Provided version: $VERSION"
+          exit 1
+        fi
+        echo "✅ Version format is valid: $VERSION"
+
+    - name: Set git user
+      uses: git-actions/set-user@v1
+
+    - name: Create release branch
+      run: |
+        git checkout -b release-v${{ github.event.inputs.version }}
+
+    - name: Update version in info.json
+      run: |
+        # shellcheck disable=SC2094
+        (rm info.json && jq '.version = "${{ github.event.inputs.version }}"' > info.json) < info.json
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+
+    - name: Prepare new changelog section for the target version
+      env:
+        VERSION: ${{ github.event.inputs.version }}
+      run: bundle exec factorix mod changelog release --version "$VERSION"
+
+    - name: Commit changes
+      run: |
+        git add info.json changelog.txt
+        git commit -m "$(cat <<'EOF'
+        :bookmark: Prepare release v${{ github.event.inputs.version }}
+
+        - Update version in info.json to ${{ github.event.inputs.version }}
+        - Add changelog.txt section for this release
+        EOF
+        )"
+
+    - name: Create release tag
+      run: |
+        git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
+
+    - name: Push release branch and tag
+      run: |
+        git push -u origin release-v${{ github.event.inputs.version }}
+        git push origin v${{ github.event.inputs.version }}
+
+    - name: Create Pull Request
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        PR_BODY="$(cat <<'EOF'
+        ## Summary
+
+        Prepare for release v${{ github.event.inputs.version }}
+
+        ## Changes
+
+        - Update version in info.json to ${{ github.event.inputs.version }}
+        - Add changelog.txt section for this release
+
+        ## Quality Checks
+
+        These checks will be performed automatically by CI and validation workflows:
+
+        - Version format validation
+        - changelog.txt format validation
+        - FACTORIO_API_KEY validation
+
+        ## Release Requirements Checklist
+
+        Before merging this PR, ensure the following requirements are met:
+
+        - [ ] **changelog.txt**: Verify all notable changes are documented
+        - [ ] **Breaking changes**: If any, ensure they are clearly documented in changelog
+        - [ ] **Dependencies**: Check if any MOD dependency updates are needed in info.json
+        - [ ] **Factorio version**: Verify factorio_version in info.json is correct
+        - [ ] **README**: Ensure README.md reflects any new features or changes
+
+        ## Post-Merge Actions
+
+        After merging this PR, the release workflow will automatically:
+        - Use the git tag v${{ github.event.inputs.version }} (already created on this branch)
+        - Build the MOD package from the tagged commit
+        - Upload to Factorio MOD Portal
+        - Create GitHub release with assets
+
+        EOF
+        )"
+
+        gh pr create --title ":bookmark: Release v${{ github.event.inputs.version }}" --body "$PR_BODY"

@@ -1,0 +1,5 @@
+[tools]
+ruby = "4.0"
+
+[env]
+_.path = ["bin"]
