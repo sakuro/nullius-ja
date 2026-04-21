@@ -10,42 +10,49 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Configure git and gh CLI
         uses: git-actions/set-user@v1
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
       - name: Fetch information about the latest version
         id: latest_version
         run: |
-          set -- $(
-            bundle exec factorix mod search "${MOD_NAME}" --json |
-            jq -rM '.[0] | .releases | sort_by(.released_at) | last | (.file_name, .version)'
-          )
-          echo "file_name=$1" >> $GITHUB_OUTPUT
-          echo "version=$2" >> $GITHUB_OUTPUT
+          echo "version=$( bundle exec factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version )" >> $GITHUB_OUTPUT
+
       - name: Download latest MOD
+        env:
+          VERSION: ${{ steps.latest_version.outputs.version }}
         run: |
-          VERSION={{ steps.latest_version.outputs.version }}
           bundle exec factrorix mod download "${MOD_NAME}@${VERSION}"
+
       - name: Update locale/en files
+        env:
+          VERSION: ${{ steps.latest_version.outputs.version }}
         run: |
-          FILE_NAME={{ steps.latest_version.outputs.file_name }}
+          FILE_NAME="${MOD_NAME}_${VERSION}.zip"
           for file in $(unzip -Z1 "${FILE_NAME}" | grep locale/en/.*\.cfg); do
             unzip -p "${FILE_NAME}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"
           done
           git status -sb
+
       - name: Create a PR on any changes in locale/en
+        env:
+          VERSION: ${{ steps.latest_version.outputs.version }}
         run: |
+          BRANCH_NAME="update-locale-${MOD_NAME}-${VERSION}"
           [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
 
-          FILE_NAME={{ steps.latest_version.outputs.file_name }}
-          VERSION={{ steps.latest_version.outputs.version }}
-          BRANCH_NAME="update-locale/en-from-${MOD_NAME}-${VERSION}"
-
-          (rm -f info.json && jq -M '.dependencies=["${FILE_NAME} >= ${VERSION}"]' > info.json) < info.json
+          (rm -f info.json && jq -M '.dependencies=["${MOD_NAME} >= ${VERSION}"]' > info.json) < info.json
 
           git switch -c "${BRANCH_NAME}"
           git add locale/en info.json
-          git commit -m ":arrow_up: Update locale/en from ${MOD_NAME}@${VERSION}"
+          git commit -m ":arrow_up: Update locale/en/*.cfg from ${MOD_NAME}@${VERSION}"
           git push origin "${BRANCH_NAME}"
           gh pr create \
-            --title "Update locale/en from ${MOD_NAME}@${VERSION}" \
+            --title "Update locale for ${MOD_NAME}@${VERSION}" \
             --body "This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}"

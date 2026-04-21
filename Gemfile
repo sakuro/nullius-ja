@@ -2,5 +2,5 @@
 
 source "https://rubygems.org"
 
-gem "factorix", ">= 0.10.0"
+gem "factorix", ">= 0.12.0"
 gem "rake"
