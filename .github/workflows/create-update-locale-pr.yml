@@ -27,8 +27,8 @@ jobs:
       - name: Download latest MOD
         env:
           VERSION: ${{ steps.latest_version.outputs.version }}
-          FACTORIO_USERNAME: ${{ secrets.FACTORI_USERNAME }}
-          FACTORIO_TOKEN: ${{ secrets.FACTORI_TOKEN }}
+          FACTORIO_USERNAME: ${{ secrets.FACTORIO_USERNAME }}
+          FACTORIO_TOKEN: ${{ secrets.FACTORIO_TOKEN }}
         run: |
           bundle exec factorix mod download "${MOD_NAME}@${VERSION}"
 
