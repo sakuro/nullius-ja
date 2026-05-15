@@ -22,7 +22,8 @@ jobs:
       - name: Fetch information about the latest version
         id: latest_version
         run: |
-          echo "version=$( bundle exec factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version )" >> $GITHUB_OUTPUT
+          version=$( bundle exec factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version)
+          echo "version=${version}" >> $GITHUB_OUTPUT
 
       - name: Download latest MOD
         env:
