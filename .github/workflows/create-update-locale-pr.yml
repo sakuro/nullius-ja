@@ -28,7 +28,7 @@ jobs:
         env:
           VERSION: ${{ steps.latest_version.outputs.version }}
         run: |
-          bundle exec factrorix mod download "${MOD_NAME}@${VERSION}"
+          bundle exec factorix mod download "${MOD_NAME}@${VERSION}"
 
       - name: Update locale/en files
         env:
