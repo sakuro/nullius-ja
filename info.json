@@ -7,6 +7,6 @@
   "description": "This MOD provides Japanese translation to Nullius overhaul MOD",
   "dependencies": [
     "? informatron",
-    "nullius >= 2.0.4"
+    "nullius >= 2.0.6"
   ]
 }
