@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
         fetch-depth: 0
 
@@ -61,12 +61,10 @@ jobs:
     - name: Check if git tag already exists
       run: |
         if git tag | grep -q "^${{ steps.version.outputs.tag }}$"; then
-          if [ "${{ github.event.action }}" != "synchronize" ]; then
-            echo "❌ Error: Git tag ${{ steps.version.outputs.tag }} already exists"
-            echo "This should only happen if the tag was created outside the release process"
-            exit 1
-          else
+          if [ "${{ github.event.action }}" == "synchronize" ]; then
             echo "Tag ${{ steps.version.outputs.tag }} exists and will be updated to latest commit"
+          else
+            echo "Tag ${{ steps.version.outputs.tag }} already exists (created by release-preparation)"
           fi
         fi
 
@@ -106,17 +104,15 @@ jobs:
           exit 1
         fi
 
-    - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        bundler-cache: true
+    - name: Setup mise
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
 
     - name: Validate changelog.txt format
-      run: bundle exec factorix mod changelog check --release
+      run: factorix mod changelog check --release
 
     - name: Set git user for tag update
       if: github.event.action == 'synchronize'  # When new commits are pushed to PR
-      uses: git-actions/set-user@v1
+      uses: git-actions/set-user@49fa9362373dabe0bfcbdb5e8d4da08045ebf6f8 # v1
 
     - name: Update release tag to latest commit
       if: github.event.action == 'synchronize'  # When new commits are pushed to PR

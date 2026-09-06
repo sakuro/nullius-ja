@@ -1,15 +1,33 @@
-/locale/en/ export-ignore
-/locale/*/*.cfg text eol=lf
-/.gitattributes export-ignore
-/.github/ export-ignore
-/.gitignore export-ignore
-/bin/ export-ignore
-/references/ export-ignore
+* text=auto export-ignore
+
+/README.md export-ignore=false
+
+/changelog.txt export-ignore=false
+/LICENSE.txt export-ignore=false
+
+/info.json export-ignore=false
+
+/locale/*/*.cfg export-ignore=false
+
+/settings.lua export-ignore=false
+/settings-updates.lua export-ignore=false
+/settings-final-fixes.lua export-ignore=false
+/data.lua export-ignore=false
+/data-updates.lua export-ignore=false
+/data-final-fixes.lua export-ignore=false
+/control.lua export-ignore=false
+*/**/*.lua export-ignore=false
+
+/thumbnail.png export-ignore=false binary
+*/**/*.png export-ignore=false binary
+
+*/**/*.ogg export-ignore=false binary
+
+*/ export-ignore=false
+.*/ export-ignore
+/spec/ export-ignore
+/tasks/ export-ignore
 /doc/ export-ignore
-/AGENTS.md export-ignore
-/CLAUDE.md export-ignore
-/Gemfile export-ignore
-/Gemfile.lock export-ignore
-/Rakefile export-ignore
-/aqua.yaml export-ignore
-/mise.toml export-ignore
+
+# locale/en holds upstream reference strings for translators, not the shipped translation
+/locale/en/ export-ignore

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#MISE description="Build MOD archive"
+set -euo pipefail
+
+mod_name=$(jq -r .name info.json)
+mod_version=$(jq -r .version info.json)
+mkdir -p dist
+archive="dist/${mod_name}_${mod_version}.zip"
+
+if [ -f "$archive" ]; then
+  stale=0
+  while IFS= read -r source; do
+    if [ -n "$source" ] && [ "$source" -nt "$archive" ]; then
+      stale=1
+      break
+    fi
+  done < <(git archive --format=tar HEAD | tar tf - | grep -v '/$')
+  if [ "$stale" -eq 0 ]; then
+    exit 0
+  fi
+fi
+
+rm -f "$archive"
+git archive --prefix "${mod_name}_${mod_version}/" HEAD -o "$archive"
