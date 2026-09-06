@@ -17,6 +17,21 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
 
+      - name: Set up dummy Factorio runtime for factorix
+        # `factorix mod show` also reports local install status, which requires a
+        # Factorio user/data dir even though this job only needs the Portal-side
+        # `latest_version` field. Point it at a throwaway runtime with an empty
+        # mod-list.json instead of installing Factorio on the runner.
+        run: |
+          mkdir -p /tmp/factorix-dummy/user_dir/mods
+          echo '{}' > /tmp/factorix-dummy/user_dir/mods/mod-list.json
+          cat > /tmp/factorix-dummy/config.toml <<'TOML'
+          [runtime]
+          user_dir = "/tmp/factorix-dummy/user_dir"
+          data_dir = "/tmp/factorix-dummy/data_dir"
+          TOML
+          echo "FACTORIX_CONFIG=/tmp/factorix-dummy/config.toml" >> "$GITHUB_ENV"
+
       - name: Fetch information about the latest version
         id: latest_version
         run: |
