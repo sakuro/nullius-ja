@@ -67,7 +67,9 @@ jobs:
           BRANCH_NAME="update-locale-${MOD_NAME}-${VERSION}"
           [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
 
-          (rm -f info.json && jq -M '.dependencies=["${MOD_NAME} >= ${VERSION}"]' > info.json) < info.json
+          (rm -f info.json && jq -M --arg mod "${MOD_NAME}" --arg ver "${VERSION}" \
+            '.dependencies |= map(if (split(" ")[0] == $mod) then ($mod + " >= " + $ver) else . end)' \
+            > info.json) < info.json
 
           git switch -c "${BRANCH_NAME}"
           git add locale/en info.json
