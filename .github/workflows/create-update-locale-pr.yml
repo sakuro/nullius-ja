@@ -77,4 +77,6 @@ jobs:
           git push origin "${BRANCH_NAME}"
           gh pr create \
             --title "Update locale for ${MOD_NAME}@${VERSION}" \
-            --body "This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}"
+            --body "This PR is automatically created by the GitHub Action workflow ${{ github.workflow }}.
+
+          Add Japanese translations for any new or changed keys in \`locale/en\` to \`locale/ja\` before merging."
