@@ -9,21 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Configure git and gh CLI
-        uses: git-actions/set-user@v1
+        uses: git-actions/set-user@49fa9362373dabe0bfcbdb5e8d4da08045ebf6f8 # v1
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
 
       - name: Fetch information about the latest version
         id: latest_version
         run: |
-          bundle exec factorix mod show "${MOD_NAME}" --json
-          echo "verson=$( bundle exec factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version)" >> $GITHUB_OUTPUT
+          factorix mod show "${MOD_NAME}" --json
+          echo "version=$(factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version)" >> $GITHUB_OUTPUT
 
       - name: Download latest MOD
         env:
@@ -31,7 +29,7 @@ jobs:
           FACTORIO_USERNAME: ${{ secrets.FACTORIO_USERNAME }}
           FACTORIO_TOKEN: ${{ secrets.FACTORIO_TOKEN }}
         run: |
-          bundle exec factorix mod download "${MOD_NAME}@${VERSION}"
+          factorix mod download "${MOD_NAME}@${VERSION}"
 
       - name: Update locale/en files
         env:

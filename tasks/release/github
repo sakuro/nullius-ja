@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#MISE description="Create GitHub Release"
+#MISE depends=["build"]
+set -euo pipefail
+
+if [ -z "${GITHUB_ACTIONS:-}" ]; then
+  echo "release:github task must be run from GitHub Actions" >&2
+  exit 1
+fi
+
+mod_name=$(jq -r .name info.json)
+mod_version=$(jq -r .version info.json)
+archive="dist/${mod_name}_${mod_version}.zip"
+tag="v${mod_version}"
+notes=$(factorix mod changelog extract --version "$mod_version" --json | \
+  jq -r '.entries | to_entries | map("### \(.key)\n" + (.value | map("- " + .) | join("\n"))) | join("\n\n")')
+
+gh release create "$tag" --title "${mod_name} ${tag}" --notes "$notes" "$archive"

@@ -1,5 +1,23 @@
 [tools]
-ruby = "4.0"
+gh = "2.99.0"
+gitleaks = "8.30"
+jq = "1.8.2"
+hk = "1.57.0"
+"github:sakuro/factorix" = "0.23.0"
+
+[hooks]
+postinstall = 'test -n "$CI" || hk install'
+
+[settings]
+minimum_release_age = "3d"
+
+[task_config]
+includes = ["tasks"]
 
 [env]
-_.path = ["bin"]
+# Make `hk install` generate hooks that run via `mise x`, so mise-managed tools
+# (gitleaks, hk) resolve without mise shell activation — e.g. from GUI git clients.
+HK_MISE = "1"
+MOD_LICENSE = "default_mit"
+MOD_CATEGORY = "localizations"
+MOD_TAGS = ""

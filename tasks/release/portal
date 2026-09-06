@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#MISE description="Publish MOD to Factorio MOD Portal"
+#MISE depends=["build"]
+set -euo pipefail
+
+if [ -z "${GITHUB_ACTIONS:-}" ]; then
+  echo "release:portal task must be run from GitHub Actions" >&2
+  exit 1
+fi
+
+mod_name=$(jq -r .name info.json)
+mod_version=$(jq -r .version info.json)
+archive="dist/${mod_name}_${mod_version}.zip"
+source_url=$(git remote get-url origin)
+
+factorix mod upload "$archive" \
+  --category "$MOD_CATEGORY" \
+  --license "$MOD_LICENSE" \
+  --source-url "$source_url" \
+  --description "$(cat README.md)"
+
+factorix mod edit "$mod_name" \
+  --summary "$(jq -r .description info.json)" \
+  --tags "$MOD_TAGS"
