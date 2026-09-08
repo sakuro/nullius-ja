@@ -38,7 +38,7 @@ Do not create a section for the next release version directly — version bumpin
 # Document Map
 
 - README.md: Project overview
-- CONTRIBUTING.md: Pull request guidelines
+- CONTRIBUTING.md: Development setup and pull request guidelines
 
 # External References
 
