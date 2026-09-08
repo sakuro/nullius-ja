@@ -39,7 +39,7 @@ jobs:
         id: latest_version
         run: |
           factorix mod show "${MOD_NAME}" --json
-          echo "version=$(factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version)" >> $GITHUB_OUTPUT
+          echo "version=$(factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version)" >> "$GITHUB_OUTPUT"
 
       - name: Download latest MOD
         env:
@@ -54,7 +54,7 @@ jobs:
           VERSION: ${{ steps.latest_version.outputs.version }}
         run: |
           FILE_NAME="${MOD_NAME}_${VERSION}.zip"
-          for file in $(unzip -Z1 "${FILE_NAME}" | grep locale/en/.*\.cfg); do
+          for file in $(unzip -Z1 "${FILE_NAME}" | grep 'locale/en/.*\.cfg'); do
             unzip -p "${FILE_NAME}" "${file}" | tr -d '\r' > "locale/en/$(basename "${file}")"
           done
           git status -sb
@@ -67,6 +67,7 @@ jobs:
           BRANCH_NAME="update-locale-${MOD_NAME}-${VERSION}"
           [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
 
+          # shellcheck disable=SC2094  # rm before the redirect; the open fd reads the old file
           (rm -f info.json && jq -M --arg mod "${MOD_NAME}" --arg ver "${VERSION}" \
             '.dependencies |= map(if (split(" ")[0] == $mod) then ($mod + " >= " + $ver) else . end)' \
             > info.json) < info.json
