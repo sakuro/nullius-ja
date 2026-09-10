@@ -1,0 +1,91 @@
+name: Scaffold Drift
+
+# Weekly three-way merge of shared infrastructure from factorio-mod-scaffold.
+# See CONTRIBUTING.md "Scaffold drift".
+
+on:
+  schedule:
+    - cron: "30 18 * * 4"   # Fri 03:30 JST (Thu 18:30 UTC); same literal in every derived MOD
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  # No `workflows` scope: GITHUB_TOKEN cannot be granted it, so a drift PR cannot
+  # carry `.github/workflows/**` changes. The skill holds those back into the PR
+  # body (see CONTRIBUTING.md "Held-back workflow files").
+
+# One drift run at a time: overlapping runs would both force-push
+# chore/scaffold-drift. Do not cancel a run in progress — it may be mid-PR.
+concurrency:
+  group: scaffold-drift
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Gate on API key
+        id: gate
+        env:
+          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        run: |
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "ANTHROPIC_API_KEY not configured - skipping (fork-safe no-op)." >&2
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.proceed == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect scaffold-side drift
+        id: check
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          # No .scaffold-sync.json (e.g. the scaffold repo itself) -> nothing to sync.
+          if [ ! -f .scaffold-sync.json ]; then
+            echo "no .scaffold-sync.json - not a derived MOD, skipping." >&2
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          [ -f .scaffold-sync.paths ] || { echo ".scaffold-sync.paths missing" >&2; echo "drift=false" >> "$GITHUB_OUTPUT"; exit 0; }
+          base=$(jq -r .commit .scaffold-sync.json)
+          # A malformed .scaffold-sync.json makes jq print "null" (or a stray
+          # value); without this the diff below fails and every error looks like
+          # drift, burning a weekly Claude run.
+          if ! printf '%s' "$base" | grep -qE '^[0-9a-f]{40}$'; then
+            echo "invalid baseline commit in .scaffold-sync.json: $base" >&2
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git clone --filter=blob:none --no-checkout \
+            https://github.com/sakuro/factorio-mod-scaffold /tmp/scaffold
+          mapfile -t globs < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' .scaffold-sync.paths)
+          if git -C /tmp/scaffold diff --quiet "$base" origin/HEAD -- "${globs[@]}"; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve drift
+        if: steps.gate.outputs.proceed == 'true' && steps.check.outputs.drift == 'true'
+        uses: anthropics/claude-code-action@5ccc3a35a6367cdb8e6fbd0728287467540ecfe2 # v1.0.219
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: >
+            Invoke the resolve-scaffold-drift skill. Open or update a PR on
+            branch chore/scaffold-drift. Do nothing if there is no drift.
+          # --model: a mechanical three-way merge + PR does not need the default
+          # (Opus); Sonnet is a few times cheaper for a weekly job across MODs.
+          # --allowedTools: agent mode grants no tools by default and the skill
+          # drives git / gh / merge.sh. Bash is unscoped here (first-party skill,
+          # ephemeral runner, scoped GITHUB_TOKEN); scope it to Bash(git:*),
+          # Bash(gh:*),… later if desired.
+          claude_args: "--model claude-sonnet-5 --permission-mode acceptEdits --allowedTools 'Bash,Read,Write,Edit,Glob,Grep,TodoWrite,Skill'"
