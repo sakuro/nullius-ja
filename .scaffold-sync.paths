@@ -1,0 +1,27 @@
+# Shared-infrastructure paths a derived MOD keeps in sync with factorio-mod-scaffold.
+# One literal path (or directory) per line. Consumed by merge.sh and by
+# .github/workflows/scaffold-drift.yml's cheap pre-check.
+
+.github/workflows/ci.yml
+.github/workflows/release-preparation.yml
+.github/workflows/release-publish.yml
+.github/workflows/release-validation.yml
+.github/workflows/scaffold-drift.yml
+.github/renovate.json
+hk.pkl
+.gitattributes
+.gitignore
+mise.toml
+AGENTS.md
+# CLAUDE.md is a symlink to AGENTS.md (template-created); not synced.
+CONTRIBUTING.md
+tasks/build
+tasks/clean
+tasks/install
+tasks/test
+tasks/release/github
+tasks/release/portal
+.busted
+spec/helper.lua
+.claude/skills/resolve-scaffold-drift
+.scaffold-sync.paths

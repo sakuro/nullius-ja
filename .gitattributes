@@ -18,6 +18,8 @@
 /control.lua export-ignore=false
 */**/*.lua export-ignore=false
 
+/migrations/*.json export-ignore=false
+
 /thumbnail.png export-ignore=false binary
 */**/*.png export-ignore=false binary
 
