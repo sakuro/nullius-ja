@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: Unreleased
+  Changes:
+    - Support Factorio 2.1
+    - Mark informatron as a recommended dependency so it downloads and enables by default
+---------------------------------------------------------------------------------------------------
 Version: 0.6.2
 Date: 2026-09-06
   Changes:
