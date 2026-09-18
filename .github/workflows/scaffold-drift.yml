@@ -75,7 +75,7 @@ jobs:
 
       - name: Resolve drift
         if: steps.gate.outputs.proceed == 'true' && steps.check.outputs.drift == 'true'
-        uses: anthropics/claude-code-action@bf38e86e58df9ebf3420326d019f955bb3be64dd # v1.0.225
+        uses: anthropics/claude-code-action@7b0b255830a1fab6e602658672acad11c12d841d # v1.0.226
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
