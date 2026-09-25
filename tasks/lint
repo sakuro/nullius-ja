@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Lint Lua code"
+set -euo pipefail
+
+eval "$(luarocks path --bin)"
+luacheck .

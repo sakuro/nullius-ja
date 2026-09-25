@@ -7,17 +7,11 @@ mod_version=$(jq -r .version info.json)
 mkdir -p dist
 archive="dist/${mod_name}_${mod_version}.zip"
 
-if [ -f "$archive" ]; then
-  stale=0
-  while IFS= read -r source; do
-    if [ -n "$source" ] && [ "$source" -nt "$archive" ]; then
-      stale=1
-      break
-    fi
-  done < <(git archive --format=tar HEAD | tar tf - | grep -v '/$')
-  if [ "$stale" -eq 0 ]; then
-    exit 0
-  fi
+# The archive is built from HEAD, not from the working tree, so freshness must be
+# judged against HEAD as well. `git archive` records the commit ID as the zip
+# comment; comparing file mtimes misses commits made after the build and deletions.
+if [ -f "$archive" ] && [ "$(unzip -z "$archive" 2>/dev/null | tail -n 1)" = "$(git rev-parse HEAD)" ]; then
+  exit 0
 fi
 
 rm -f "$archive"

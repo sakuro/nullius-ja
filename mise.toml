@@ -5,12 +5,16 @@ jq = "1.8.2"
 hk = "2.0.1"
 actionlint = "1.7.12"
 shellcheck = "0.11.0"
+stylua = "2.5.2"
 "github:sakuro/factorix" = "0.24.0"
 
 [hooks]
 # hk install: skipped in CI (GitHub Actions sets CI); hk falls back to script shims on Git < 2.54.
+# luacheck: needed by `mise run lint`, including in CI. Version bumped by Renovate (see .github/renovate.json).
+# The guard skips this when luarocks is unavailable — release workflows set MISE_DISABLE_TOOLS=lua.
 postinstall = [
   'test -n "$CI" || hk install',
+  '! luarocks --version >/dev/null 2>&1 || luarocks install --local luacheck 1.2.0',
 ]
 
 [settings]
