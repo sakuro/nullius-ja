@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: "30 18 * * 4"   # Fri 03:30 JST (Thu 18:30 UTC); same literal in every derived MOD
   workflow_dispatch:
+    inputs:
+      debug:
+        description: "Log Claude's full output (a public repo's log is public too)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -26,13 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Gate on API key
+      - name: Gate on credentials
         id: gate
         env:
-          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          HAS_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
         run: |
-          if [ "$HAS_KEY" != "true" ]; then
-            echo "ANTHROPIC_API_KEY not configured - skipping (fork-safe no-op)." >&2
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "CLAUDE_CODE_OAUTH_TOKEN not configured - skipping (fork-safe no-op)." >&2
             echo "proceed=false" >> "$GITHUB_OUTPUT"
           else
             echo "proceed=true" >> "$GITHUB_OUTPUT"
@@ -77,8 +82,10 @@ jobs:
         if: steps.gate.outputs.proceed == 'true' && steps.check.outputs.drift == 'true'
         uses: anthropics/claude-code-action@cfc3eb22bfed5c26ef66e3223c982af27e4524de # v1.0.231
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          show_full_output: ${{ inputs.debug == true }}
+          allowed_bots: "github-actions[bot]"
           prompt: >
             Invoke the resolve-scaffold-drift skill. Open or update a PR on
             branch chore/scaffold-drift. Do nothing if there is no drift.
