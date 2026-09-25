@@ -5,15 +5,16 @@
 This project manages its toolchain with [mise](https://mise.jdx.dev/). After cloning:
 
 1. `mise trust` — `mise.toml` defines `[env]` and `[hooks]`, which mise applies only for trusted configs.
-2. `mise install` — installs the pinned tools. Its `postinstall` hook then runs `hk install` to register this repository's Git hooks.
+2. `mise install` — installs the pinned tools. Its `postinstall` hook then runs `hk install` to register this repository's Git hooks, and installs `luacheck` for static analysis.
 
 Review `hk.pkl` and the `git-hooks` package it imports before running the above: `hk install` configures hooks that execute on every commit and push. They enforce, among other things, that commit subjects start with a GitHub `:emoji:` code.
 
-`mise tasks ls -l` lists this project's tasks (`-l` drops tasks inherited from mise's global config).
+Then `mise run format` formats Lua code, `mise run lint` runs `luacheck`, and `mise tasks ls -l` lists this project's tasks (`-l` drops tasks inherited from mise's global config).
 
 ### Notes
 
 - Re-run `mise install` after pulling changes to `mise.toml`; Renovate bumps tool versions regularly.
+- `mise run build` needs `unzip` (preinstalled on macOS and most Linux distributions): it reads the commit ID stored in the existing archive to decide whether to rebuild it.
 
 ## Pull requests
 
@@ -61,7 +62,8 @@ repo was last synced to.
   push from the workflow you re-run CI by adding `run-ci` again. (CI runs
   for real on every `labeled` event — there is no label-name filter, since a
   skipped required check counts as passing — so adding any label also re-runs
-  it.)
+  it.) A repo that has dropped the test lane has no `ci.yml`, so nothing listens
+  for `labeled`: the label starts nothing and stays on the PR.
 - Require the test lane (if this repo has one) to pass.
 - Check that MOD-specific content survived: `mise.toml` `[env] MOD_*`, any doc
   sections this repo added, real `spec/*_spec.lua`.
@@ -82,13 +84,47 @@ repo was last synced to.
 
 **When it runs**
 
-Only with an `ANTHROPIC_API_KEY` repo secret set; blank means the workflow's gate
-step no-ops. A fork does not inherit the secret, so the workflow does nothing on
-a fork and no API cost is incurred.
+Only with a `CLAUDE_CODE_OAUTH_TOKEN` repo secret set; blank means the workflow's
+gate step no-ops. A fork does not inherit the secret, so the workflow does
+nothing on a fork. GitHub disables a scheduled workflow in a public repository
+after 60 days without repository activity, so drift detection stops silently on
+a MOD that has gone quiet.
 
 The first scheduled run can fail the action's `checkHumanActor` check because
 `github.actor` on a `schedule` event is not a `User`. If that happens, set the
 `claude-code-action` `allowed_bots` input in `scaffold-drift.yml`.
+
+**Authentication**
+
+`CLAUDE_CODE_OAUTH_TOKEN` authenticates against a Claude subscription, so a run
+draws down subscription usage instead of Claude Console API credits. Generate it
+once with `claude setup-token` and set the same token in every derived MOD:
+
+```sh
+gh secret set CLAUDE_CODE_OAUTH_TOKEN
+```
+
+`bin/initialize` prompts for it when a MOD is created from the scaffold. That
+secret is the only out-of-band step — everything else rides along with the
+scaffold copy.
+
+The token does not auto-refresh (`anthropics/claude-code-action#727`). When it
+expires, every derived MOD fails in the same week with an identical signature:
+the `Resolve drift` step ends after a few hundred milliseconds with
+`is_error: true`, `num_turns: 1`, and `total_cost_usd: 0`, and no error text,
+because the action hides Claude's output by default. That signature means the
+credential is unusable, not that the merge failed. Recover by re-running
+`claude setup-token` and re-setting the secret in every MOD.
+
+To read the real error, re-run one MOD by hand with the `debug` input, which
+turns on the action's `show_full_output`:
+
+```sh
+gh workflow run scaffold-drift.yml -f debug=true
+```
+
+Leave it off otherwise. Full output includes tool results, which may carry
+secrets, and a public repository's Actions logs are public too.
 
 **Test lane**
 

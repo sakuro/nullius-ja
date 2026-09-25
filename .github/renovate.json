@@ -43,6 +43,16 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "sakuro/git-hooks"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/mise\\.toml$/"],
+      "matchStrings": [
+        "luarocks install --local luacheck (?<currentValue>[0-9.]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "lunarmodules/luacheck",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ]
 }

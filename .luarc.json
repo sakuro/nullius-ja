@@ -1,0 +1,53 @@
+{
+  "runtime": {
+    "version": "Lua 5.2"
+  },
+  "diagnostics": {
+    "globals": [
+      "data",
+      "defines",
+      "game",
+      "script",
+      "storage",
+      "rendering",
+      "settings",
+      "prototypes",
+      "remote",
+      "commands",
+      "mods",
+      "log",
+      "serpent",
+      "table_size",
+
+      "describe",
+      "context",
+      "it",
+      "spec",
+      "test",
+      "pending",
+      "insulate",
+      "expose",
+      "before_each",
+      "after_each",
+      "setup",
+      "teardown",
+      "lazy_setup",
+      "lazy_teardown",
+      "strict_setup",
+      "strict_teardown",
+      "randomize",
+      "finally",
+      "spy",
+      "mock",
+      "stub",
+      "match"
+    ]
+  },
+  "workspace": {
+    "checkThirdParty": false
+  },
+  "workspace.library": [
+    "${3rd}/busted/library",
+    "${3rd}/luassert/library"
+  ]
+}

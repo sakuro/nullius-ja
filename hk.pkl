@@ -17,6 +17,15 @@ hooks {
   ["pre-commit"] {
     steps {
       ["gitleaks"] = Builtins.gitleaks
+      ["no-commit-to-branch"] = Builtins.no_commit_to_branch
+      ["stylua"] {
+        glob = "**/*.lua"
+        check = "stylua --check {{files}} || { echo 'Lua formatting check failed. Run `mise run format`, then stage the changes and commit again.' >&2; exit 1; }"
+      }
+      ["luacheck"] {
+        glob = "**/*.lua"
+        check = "eval \"$(luarocks path --bin)\" && luacheck {{files}}"
+      }
     }
   }
   ["pre-push"] {

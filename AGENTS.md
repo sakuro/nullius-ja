@@ -6,6 +6,10 @@ for translators) — no Lua source.
 
 # Development
 
+## Git workflow
+
+The default branch is protected: direct pushes and force pushes are rejected, deletion is disallowed. Make changes on a branch and open a pull request; see CONTRIBUTING.md for PR conventions.
+
 ## Available tasks
 
 Run `mise tasks ls -l` to list tasks defined in this project. The `-l` (`--local`) flag excludes tasks inherited from mise's global config, which are unrelated to this project.
