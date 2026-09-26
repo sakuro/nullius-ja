@@ -1,11 +1,12 @@
 name: Release Preparation
 
 # This workflow only handles file updates for release preparation.
-# All validations are performed by the Release Validation workflow on PR creation.
+# All validations are performed by the Release Validation workflow, which this
+# workflow dispatches on the release branch after opening the PR.
 
 env:
   MOD_NAME: ${{ github.event.repository.name }}
-  # Lua is only needed for `mise run test`; skip installing it in release workflows
+  # Lua is only needed for `mise run test` / `mise run lint`; skip installing it in release workflows
   MISE_DISABLE_TOOLS: lua
 
 on:
@@ -20,6 +21,7 @@ jobs:
   create-release-branch:
     runs-on: ubuntu-latest
     permissions:
+      actions: write       # Required for dispatching checks on the release PR
       contents: write      # Required for git push (branch and tag creation)
       pull-requests: write # Required for PR creation
 
@@ -97,7 +99,7 @@ jobs:
 
         ## Quality Checks
 
-        These checks will be performed automatically by CI and validation workflows:
+        These checks will be performed automatically by the Release Validation workflow:
 
         - Version format validation
         - changelog.txt format validation
@@ -125,3 +127,17 @@ jobs:
         )"
 
         gh pr create --title ":bookmark: Release v${{ github.event.inputs.version }}" --body "$PR_BODY"
+
+    # A PR opened by GITHUB_TOKEN does not trigger pull_request workflows, but
+    # workflow_dispatch is exempt. The check runs land on the branch head commit,
+    # so they count as the PR's required checks.
+    - name: Dispatch checks on the release PR
+      env:
+        GH_TOKEN: ${{ github.token }}
+        BRANCH: release-v${{ github.event.inputs.version }}
+      run: |
+        for workflow in release-validation.yml lint.yml spec.yml; do
+          # spec.yml exists only in a MOD with the test lane.
+          [ -f ".github/workflows/$workflow" ] || continue
+          gh workflow run "$workflow" --ref "$BRANCH"
+        done

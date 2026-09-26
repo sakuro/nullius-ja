@@ -62,17 +62,17 @@ Create a TODO per numbered step.
    `git add` each resolved file.
 
 6. **Test-lane fragments.** If this repo has no `.busted` file, the test lane is
-   disabled. Remove these fragments from the merged `mise.toml` /
+   disabled. Remove these busted fragments from the merged `mise.toml` /
    `.github/renovate.json` — drop any a clean merge pulled in from the scaffold,
    and resolve conflicts in these regions toward removal:
-   - `mise.toml` `[tools]` — the `lua` entry.
    - `mise.toml` `[hooks].postinstall` — the `luarocks install --local busted`
-     array element and its `luarocks --version` guard, plus the busted / luarocks
-     comment lines.
-   - `.github/renovate.json` `packageRules` — the rule with
-     `matchManagers: ["mise"]`, `matchDepNames: ["lua"]`, `enabled: false`.
+     array element, and the `# busted:` comment line.
    - `.github/renovate.json` `customManagers` — the `lunarmodules/busted` regex
      manager.
+   Keep the `lua` tool, the luacheck postinstall element, and the Renovate rule
+   that disables `lua` updates: luacheck runs on Lua in every MOD. An earlier
+   sync removed `lua` and that rule as test-lane fragments, and the three-way
+   merge preserves that removal, so copy any that are missing from the scaffold.
    `git add` the results.
 
 7. **Hold back paths this run cannot apply.** Two path classes can't be carried
@@ -132,8 +132,6 @@ Create a TODO per numbered step.
        Renovate), then bump `.scaffold-sync.json` `commit` to `<head>` and
        `synced_at` to now." State that the baseline was **not** bumped.
    - `gh pr edit chore/scaffold-drift --add-label chore`.
-   - Do **not** add the `run-ci` label — that is the reviewer's trigger, and a
-     label set with `GITHUB_TOKEN` would not start CI anyway.
    - Do not touch `changelog.txt`; every tracked path is `export-ignore`d dev
      infrastructure, invisible to MOD users.
 
@@ -141,8 +139,12 @@ Create a TODO per numbered step.
 
 ## Notes
 
-- `merge.sh` already skips the four test-lane whole files when `.busted` is
-  absent; step 6 is only the fragments inside files that stay.
+- `merge.sh` already skips the four test-lane whole files
+  (`.github/workflows/spec.yml`, `.busted`, `tasks/test`, `spec/helper.lua`) when
+  `.busted` is absent; step 6 is only the fragments inside files that stay.
+- `merge_test.sh` is the fixture test for `merge.sh`, and no workflow runs it.
+  After changing `merge.sh`, run `bash .claude/skills/resolve-scaffold-drift/merge_test.sh`
+  locally. Like `merge.sh`, it needs bash ≥ 4 (not the macOS system bash 3.2).
 - If `merge.sh` prints `CONFLICT` for a delete/modify case (scaffold deleted a
   file this repo still changes, or vice versa), decide per file: usually follow
   the scaffold unless the MOD clearly depends on it, and mention it in the PR body.

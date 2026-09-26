@@ -57,14 +57,12 @@ repo was last synced to.
 
 **Reviewing a `chore/scaffold-drift` PR**
 
-- The PR is opened with `GITHUB_TOKEN`, so CI does not start on its own. Add the
-  `run-ci` label to start it; CI removes that label as it runs, so after a later
-  push from the workflow you re-run CI by adding `run-ci` again. (CI runs
-  for real on every `labeled` event — there is no label-name filter, since a
-  skipped required check counts as passing — so adding any label also re-runs
-  it.) A repo that has dropped the test lane has no `ci.yml`, so nothing listens
-  for `labeled`: the label starts nothing and stays on the PR.
-- Require the test lane (if this repo has one) to pass.
+- The PR is opened with `GITHUB_TOKEN`, which does not trigger `pull_request`
+  workflows, so the drift workflow dispatches `lint.yml` (and `spec.yml`)
+  on the branch itself. To re-run them, use the Actions page or
+  `gh workflow run lint.yml --ref chore/scaffold-drift`.
+- Require the `format-check` and `lint` checks (and `spec`, if this repo has the
+  test lane) to pass.
 - Check that MOD-specific content survived: `mise.toml` `[env] MOD_*`, any doc
   sections this repo added, real `spec/*_spec.lua`.
 - The PR body links the scaffold compare range and notes each conflict the skill
@@ -129,8 +127,9 @@ secrets, and a public repository's Actions logs are public too.
 **Test lane**
 
 A repo with no `.busted` file has dropped the test lane. The sync never re-adds
-the test files (`ci.yml`, `.busted`, `tasks/test`, `spec/helper.lua`) or the
-Lua-testing fragments in `mise.toml` / `.github/renovate.json`.
+the test files (`.github/workflows/spec.yml`, `.busted`, `tasks/test`,
+`spec/helper.lua`) or the busted fragments in `mise.toml` /
+`.github/renovate.json`. Lua stays installed for luacheck.
 
 **If a sync looks wrong**
 

@@ -19,6 +19,11 @@
         "jdx/hk"
       ],
       "groupName": "hk"
+    },
+    {
+      "matchManagers": ["mise"],
+      "matchDepNames": ["lua"],
+      "enabled": false
     }
   ],
   "customManagers": [

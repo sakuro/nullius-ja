@@ -2,7 +2,8 @@
 # One literal path (or directory) per line. Consumed by merge.sh and by
 # .github/workflows/scaffold-drift.yml's cheap pre-check.
 
-.github/workflows/ci.yml
+.github/workflows/lint.yml
+.github/workflows/spec.yml
 .github/workflows/release-preparation.yml
 .github/workflows/release-publish.yml
 .github/workflows/release-validation.yml
