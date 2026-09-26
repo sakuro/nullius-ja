@@ -45,18 +45,41 @@ git -C "$scaffold" rev-parse --verify --quiet "$base^{commit}" >/dev/null \
 
 theirs_ref=HEAD  # the scaffold clone sits at the tip of its default branch
 
+# Print the entries of a .scaffold-sync.paths file read from stdin, one per line.
+path_entries() {
+  local entry
+  while IFS= read -r entry || [ -n "$entry" ]; do
+    entry="${entry%%#*}"                     # strip trailing comment
+    entry="$(printf '%s' "$entry" | tr -d '[:space:]')"
+    [ -n "$entry" ] && printf '%s\n' "$entry"
+  done
+}
+
 # --- collect candidate paths ---------------------------------------------------
 # Union of the tracked files that match each entry, on the scaffold side and ours.
 declare -A seen=()
-while IFS= read -r entry || [ -n "$entry" ]; do
-  entry="${entry%%#*}"                       # strip trailing comment
-  entry="$(printf '%s' "$entry" | tr -d '[:space:]')"
-  [ -n "$entry" ] || continue
+while IFS= read -r entry; do
   while IFS= read -r f; do [ -n "$f" ] && seen["$f"]=1; done \
     < <(git -C "$scaffold" ls-tree -r --name-only "$theirs_ref" -- "$entry" 2>/dev/null)
   while IFS= read -r f; do [ -n "$f" ] && seen["$f"]=1; done \
     < <(git ls-files -- "$entry" 2>/dev/null)
-done < "$paths_file"
+done < <(path_entries < "$paths_file")
+
+# --- paths dropped from the sync list ------------------------------------------
+# A file the baseline's list tracked that the current list does not. If the
+# scaffold deleted it too, it goes through the same scaffold-side deletion as any
+# tracked file: an unmodified copy is DELETEd, a modified one is a CONFLICT. A
+# file the scaffold still has is no longer shared and stays the MOD's. A
+# baseline without the list (it predates .scaffold-sync.paths) drops nothing.
+if git -C "$scaffold" cat-file -e "$base:.scaffold-sync.paths" 2>/dev/null; then
+  while IFS= read -r entry; do
+    while IFS= read -r f; do
+      [ -n "$f" ] && [ -z "${seen[$f]:-}" ] || continue
+      git -C "$scaffold" cat-file -e "$theirs_ref:$f" 2>/dev/null && continue
+      seen["$f"]=1
+    done < <(git -C "$scaffold" ls-tree -r --name-only "$base" -- "$entry" 2>/dev/null)
+  done < <(git -C "$scaffold" show "$base:.scaffold-sync.paths" | path_entries)
+fi
 
 # --- test-lane auto-detection ------------------------------------------------
 # No .busted in the MOD -> it has dropped the test lane; never resurrect these.

@@ -25,9 +25,13 @@ tasks/test
 tasks/format
 tasks/format-check
 tasks/lint
+tasks/doc-check
 tasks/release/github
 tasks/release/portal
 .busted
 spec/helper.lua
+tools/doc_check.lua
+tools/doc_check_test.sh
+tools/doc_check_fixtures
 .claude/skills/resolve-scaffold-drift
 .scaffold-sync.paths

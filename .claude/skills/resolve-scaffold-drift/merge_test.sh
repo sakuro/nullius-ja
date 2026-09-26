@@ -44,6 +44,7 @@ bin.dat
 .github/workflows/spec.yml
 tasks/test
 spec/helper.lua
+dropped/
 EOF
 printf 'v1\n'            > verbatim.txt
 printf 'a\nb\nc\nd\ne\n' > mergeable.txt
@@ -57,6 +58,11 @@ printf '\n'              > spec/helper.lua
 printf 'agents\n'        > AGENTS.md          # symlink target for LINK.md
 ln -s AGENTS.md LINK.md                       # tracked symlink -> merge.sh must SKIP
 printf 'AAAA\n'          > bin.dat            # theirs turns this into NUL bytes -> merge-file hard error
+# dropped/ leaves the list in theirs (a directory entry, so it is expanded)
+mkdir -p dropped
+printf 'same\n'          > dropped/same.txt   # theirs deletes; MOD unchanged -> DELETE
+printf 'mod\n'           > dropped/mod.txt    # theirs deletes; MOD modified -> CONFLICT
+printf 'kept\n'          > dropped/kept.txt   # theirs keeps (now MOD-owned) -> untouched
 git_quiet add -A
 git_quiet commit -m ":seedling: base"
 base=$(git rev-parse HEAD)
@@ -70,6 +76,9 @@ printf 'test v2\n'       > tasks/test           # theirs changes a disabled-lane
 printf '#!/bin/sh\necho hi\n' > tasks/newexec   # theirs adds an executable the MOD lacks -> CREATE
 chmod +x tasks/newexec
 printf '\x00\x01\x02BBBB\n'   > bin.dat          # NUL bytes -> git merge-file hard error -> ERROR
+grep -vx 'dropped/' .scaffold-sync.paths > paths.tmp && mv paths.tmp .scaffold-sync.paths
+git_quiet rm -q dropped/same.txt dropped/mod.txt
+printf 'kept v2\n'       > dropped/kept.txt     # still in the scaffold, just untracked
 git_quiet add -A
 git_quiet commit -m ":sparkles: theirs"
 
@@ -84,6 +93,10 @@ printf 'delete me\n'     > gone.txt             # unchanged from base -> follow 
 mkdir -p tasks
 printf 'build v1\nlocal tweak\n' > tasks/build  # ours changed too -> conflict
 printf 'AAAAlocal\n'     > bin.dat              # all three differ -> merge-file runs and hard-errors
+mkdir -p dropped
+printf 'same\n'          > dropped/same.txt     # unchanged from base
+printf 'mod\nlocal\n'    > dropped/mod.txt      # MOD changed it
+printf 'kept\n'          > dropped/kept.txt     # unchanged from base
 git_quiet add -A
 git_quiet commit -m ":seedling: mod"
 # no .busted, no .github/workflows/spec.yml -> test lane disabled
@@ -111,6 +124,16 @@ if grep -q '<<<<<<< ours' tasks/build; then
 else
   echo "FAIL - conflict markers"; fail=1
 fi
+
+# --- paths dropped from the sync list ---------------------------------------
+# dropped/ is listed at the baseline but not at HEAD. Files the scaffold also
+# deleted follow a scaffold-side deletion; one it still has stays the MOD's.
+check "dropped/same.txt deleted"        "DELETE dropped/same.txt"   "$(line 'dropped/same.txt')"
+check "dropped/same.txt removed"        "absent" "$([ -e dropped/same.txt ] && echo present || echo absent)"
+check "dropped/mod.txt conflict"        "CONFLICT dropped/mod.txt"  "$(line 'dropped/mod.txt')"
+check "dropped/mod.txt left intact"     "$(printf 'mod\nlocal')" "$(cat dropped/mod.txt)"
+check "dropped/kept.txt untouched"      "" "$(line 'dropped/kept.txt')"
+check "dropped/kept.txt content kept"   "kept" "$(cat dropped/kept.txt)"
 
 # --- exec bit on CREATE ----------------------------------------------------
 # tasks/newexec is added scaffold-side only and is 100755 there; the CREATE
