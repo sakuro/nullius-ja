@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#MISE description="Check function doc comments in the mod's Lua source"
+set -euo pipefail
+
+# Every Lua file the mod itself loads: lib/, prototypes/, and the stage entry
+# points at the root (AGENTS.md "Lua source layout"). spec/ is test code and
+# tools/ holds dev scripts, including this checker's intentionally-malformed
+# fixtures, so both stay out.
+#
+# Extra arguments are passed through, so a backlog can be captured with
+#   mise run doc-check -- --write-baseline > .doc-check-baseline
+# and suppressed by adding `--baseline .doc-check-baseline` below.
+files=()
+while IFS= read -r file; do
+  files+=("$file")
+done < <(
+  {
+    for dir in lib prototypes; do
+      if [ -d "$dir" ]; then find "$dir" -name '*.lua'; fi
+    done
+    find . -maxdepth 1 -name '*.lua'
+  } | sed 's|^\./||' | sort
+)
+
+# The checker rejects an empty file list, but a MOD without Lua of its own (a
+# locale-only MOD, or the scaffold itself) has nothing to check.
+if [ ${#files[@]} -eq 0 ]; then
+  exit 0
+fi
+
+lua tools/doc_check.lua "$@" "${files[@]}"

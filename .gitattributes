@@ -29,6 +29,7 @@
 .*/ export-ignore
 /spec/ export-ignore
 /tasks/ export-ignore
+/tools/ export-ignore
 /doc/ export-ignore
 
 # locale/en holds upstream reference strings for translators, not the shipped translation

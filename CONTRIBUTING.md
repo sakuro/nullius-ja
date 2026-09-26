@@ -23,6 +23,85 @@ When opening a pull request:
 - Do not change the version in `info.json`. Version bumping is handled by the release workflow.
 - Document any user-visible change in `changelog.txt` (see below).
 
+## Comment conventions
+
+Public functions — `function Module.name(...)` and `function Module:name(...)` —
+carry a doc comment in three layers:
+
+```lua
+--- Rounds value up to the next multiple of size.
+---
+--- Pressing "+1 Stack" always adds at least one full stack, so the result is
+--- strictly greater than value even when value is already an exact multiple.
+---@param value number
+---@param size number
+---@return number
+function Module.round_up(value, size)
+```
+
+- The **summary** is one line, required, and starts with a verb in the present
+  tense (`Decides ...`, `True when ...`). It is not a restatement of the
+  function's name.
+- The **rationale paragraph** is optional and says *why*, not *what*: behavior
+  confirmed over RCON, a Factorio quirk being worked around, why the caller
+  passes a value already extracted from the runtime. What the function does is
+  the summary's and the tags' job, so it is not repeated here. This is why one
+  function has a three-line comment and another fifteen: the difference is how
+  much rationale there is to record, not how carefully it was documented.
+- **`---@param`** appears once per declared parameter, in declaration order.
+  Obvious ones carry only a type; ones with a contract carry a note
+  (`---@param filters LuaLogisticPoint.filters  plain array, already extracted by the caller`).
+  `self` is implicit in a `:` declaration and is not documented. Varargs are
+  `---@param ... <type>`.
+- **`---@return`** appears once per returned value, in order, and includes
+  `|nil` when nil is a possible result (`---@return LuaTechnology|nil`). A
+  function that returns nothing gets no tag.
+- Type names use the Factorio API's own spelling (`LuaPlayer`, `LuaLogisticPoint`,
+  `uint`) or plain Lua types (`string`, `number`, `boolean`, `table`). Nothing
+  reads these as types — no language server runs here — so they are documentation
+  for human readers, and a `table` whose shape matters is better described by the
+  API name it mirrors plus a note.
+- Comments **inside** a function body stay there. A comment explaining why one
+  line is the way it is belongs next to that line; only the description of the
+  function itself belongs above it.
+- Comment lines wrap at about 88 columns, like the code around them; `luacheck`'s
+  hard limit is 120. A tag's note that does not fit continues on the next line,
+  indented under the tag:
+
+  ```lua
+  ---@param requester_point LuaLogisticPoint|nil  only `logistic_network` is read;
+  ---  extracted by the caller, e.g. TemporaryRequestAction.requester_point_for
+  ```
+
+- "Public" means reachable from outside the module, whichever syntax gets it there:
+  a `function Module.name(...)` definition, or a `local function` the module hands
+  out through its final `return` (bare or in a table) or an assignment onto the
+  module table. An exported local is documented at its own definition, which is
+  where a reader looks. Locals that stay inside the module are the author's
+  judgement call: document the ones that are not obvious from their name and a few
+  lines of body. If a local is exported only so a spec can reach it, that export is
+  still public — either document it or test it through the public entry point.
+
+`mise run doc-check` enforces the mechanical half of this: a `---` block with a
+summary line, one `---@param` per declared parameter in the right order, and a
+`---@return` on any function that returns a value. It does not check types or
+prose. It reads every Lua file the mod loads — `lib/`, `prototypes/`, and the
+stage entry points at the root. `spec/` is test code and `tools/` holds
+standalone dev scripts, so neither is in scope. CI runs it in the `lint` job.
+
+Should a batch of undocumented code arrive at once — a large import, say —
+`mise run doc-check -- --write-baseline > .doc-check-baseline` captures it and
+`--baseline .doc-check-baseline` in `tasks/doc-check` suppresses it while it is
+worked through. Such a list can only shrink: `doc-check` fails on an entry whose
+function is now documented or gone, and on a baseline with no entries left, which is
+how the last one gets deleted.
+
+`tools/doc_check_test.sh` is the checker's own fixture test. CI does not run it,
+since every MOD's copy matches the scaffold's; after changing `tools/doc_check.lua`,
+run `bash tools/doc_check_test.sh` locally. A doc checker that silently passes
+everything would make the baseline a lie, so such a change belongs with a case in
+that test.
+
 ## Changelog
 
 `changelog.txt` uses Factorio's changelog format. On top of that, this project
