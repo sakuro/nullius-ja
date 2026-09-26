@@ -25,7 +25,7 @@
 #
 # Exits 0 even when CONFLICT lines are printed. Exits 2 on a usage/setup error.
 # Does NOT edit .scaffold-sync.json, does NOT commit, and does NOT touch the
-# Lua-testing fragments inside mise.toml / .github/renovate.json -- the caller
+# busted fragments inside mise.toml / .github/renovate.json -- the caller
 # handles those.
 
 set -uo pipefail
@@ -63,7 +63,7 @@ done < "$paths_file"
 if [ ! -e .busted ]; then
   # shellcheck disable=SC2034  # $p is expanded by `unset` itself; the single
   # quotes only keep the subscript from being treated as a glob.
-  for p in .github/workflows/ci.yml .busted tasks/test spec/helper.lua; do
+  for p in .github/workflows/spec.yml .busted tasks/test spec/helper.lua; do
     unset 'seen[$p]'
   done
 fi

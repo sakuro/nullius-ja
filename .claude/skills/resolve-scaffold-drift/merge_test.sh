@@ -41,7 +41,7 @@ tasks/newexec
 LINK.md
 bin.dat
 .busted
-.github/workflows/ci.yml
+.github/workflows/spec.yml
 tasks/test
 spec/helper.lua
 EOF
@@ -51,7 +51,7 @@ printf 'delete me\n'     > gone.txt
 mkdir -p tasks .github/workflows spec
 printf 'build v1\n'      > tasks/build
 printf 'busted\n'        > .busted
-printf 'ci v1\n'         > .github/workflows/ci.yml
+printf 'spec v1\n'       > .github/workflows/spec.yml
 printf 'test\n'          > tasks/test
 printf '\n'              > spec/helper.lua
 printf 'agents\n'        > AGENTS.md          # symlink target for LINK.md
@@ -86,7 +86,7 @@ printf 'build v1\nlocal tweak\n' > tasks/build  # ours changed too -> conflict
 printf 'AAAAlocal\n'     > bin.dat              # all three differ -> merge-file runs and hard-errors
 git_quiet add -A
 git_quiet commit -m ":seedling: mod"
-# no .busted, no .github/workflows/ci.yml -> test lane disabled
+# no .busted, no .github/workflows/spec.yml -> test lane disabled
 
 out=$("$merge" "$scaffold" "$base")
 line() { printf '%s\n' "$out" | grep -E "^[A-Z]+ $1$" || true; }
@@ -98,7 +98,7 @@ check "newfile.txt created"         "CREATE newfile.txt"      "$(line newfile.tx
 check "tasks/build conflict"        "CONFLICT tasks/build"    "$(line tasks/build)"
 # No .busted in the MOD -> merge.sh must not emit any line (CREATE/CLEAN least
 # of all) for the four test-lane paths, even when the scaffold changed one.
-check "ci.yml skipped (no test lane)"       "" "$(line '.github/workflows/ci.yml')"
+check "spec.yml skipped (no test lane)"     "" "$(line '.github/workflows/spec.yml')"
 check ".busted skipped (no test lane)"      "" "$(line '.busted')"
 check "tasks/test skipped (no test lane)"   "" "$(line 'tasks/test')"
 check "spec/helper.lua skipped (no test lane)" "" "$(line 'spec/helper.lua')"

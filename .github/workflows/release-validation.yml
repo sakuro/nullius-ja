@@ -5,17 +5,21 @@ name: Release Validation
 
 env:
   MOD_NAME: ${{ github.event.repository.name }}
-  # Lua is only needed for `mise run test`; skip installing it in release workflows
+  # Lua is only needed for `mise run test` / `mise run lint`; skip installing it in release workflows
   MISE_DISABLE_TOOLS: lua
 
 on:
   pull_request:
     branches: [main]
+  # release-preparation.yml opens the release PR with GITHUB_TOKEN, which does
+  # not trigger pull_request workflows, so it dispatches this run instead.
+  workflow_dispatch:
 
 jobs:
   validate-release:
-    # Only run for release branches
-    if: startsWith(github.head_ref, 'release-v')
+    # Only run for release branches. head_ref is empty on workflow_dispatch;
+    # ref_name is then the dispatched branch.
+    if: startsWith(github.head_ref || github.ref_name, 'release-v')
     runs-on: ubuntu-latest
     permissions:
       contents: write      # Required for git tag push
@@ -31,7 +35,7 @@ jobs:
     - name: Extract version from branch name
       id: version
       env:
-        BRANCH_NAME: ${{ github.head_ref }}
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       run: |
         VERSION=${BRANCH_NAME#release-v}
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -141,4 +145,4 @@ jobs:
         fi
         echo "- FACTORIO_API_KEY is configured"
         echo "- changelog.txt is properly formatted"
-        echo "- Quality checks handled by CI workflow"
+        echo "- Quality checks handled by the Lint and Spec workflows"

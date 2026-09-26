@@ -14,6 +14,7 @@ on:
         default: false
 
 permissions:
+  actions: write      # dispatch the checks on the drift PR
   contents: write
   pull-requests: write
   # No `workflows` scope: GITHUB_TOKEN cannot be granted it, so a drift PR cannot
@@ -96,3 +97,21 @@ jobs:
           # ephemeral runner, scoped GITHUB_TOKEN); scope it to Bash(git:*),
           # Bash(gh:*),… later if desired.
           claude_args: "--model claude-sonnet-5 --permission-mode acceptEdits --allowedTools 'Bash,Read,Write,Edit,Glob,Grep,TodoWrite,Skill'"
+
+      # A push by GITHUB_TOKEN does not trigger pull_request workflows, but
+      # workflow_dispatch is exempt. The check runs land on the branch head
+      # commit, so they count as the PR's required checks.
+      - name: Dispatch checks on the drift PR
+        if: steps.gate.outputs.proceed == 'true' && steps.check.outputs.drift == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(gh pr view chore/scaffold-drift --json state -q .state 2>/dev/null)" != "OPEN" ]; then
+            echo "no open drift PR - nothing to check." >&2
+            exit 0
+          fi
+          for workflow in lint.yml spec.yml; do
+            # spec.yml exists only in a MOD with the test lane.
+            [ -f ".github/workflows/$workflow" ] || continue
+            gh workflow run "$workflow" --ref chore/scaffold-drift
+          done

@@ -5,7 +5,7 @@ name: Release Publish
 
 env:
   MOD_NAME: ${{ github.event.repository.name }}
-  # Lua is only needed for `mise run test`; skip installing it in release workflows
+  # Lua is only needed for `mise run test` / `mise run lint`; skip installing it in release workflows
   MISE_DISABLE_TOOLS: lua
 
 on:

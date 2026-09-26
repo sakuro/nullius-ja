@@ -1,0 +1,42 @@
+name: Lint
+
+# workflow_dispatch: scaffold-drift.yml dispatches this for its drift PR, which
+# GITHUB_TOKEN opens and pushes without triggering pull_request workflows.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    env:
+      # stylua is a standalone binary; skip building Lua
+      MISE_DISABLE_TOOLS: lua
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+    - name: Setup mise
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
+
+    - name: Check Lua formatting
+      run: mise run format-check
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+    - name: Install build dependencies for Lua
+      run: sudo apt-get update && sudo apt-get install -y libreadline-dev
+
+    - name: Setup mise
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
+
+    - name: Lint Lua code
+      run: mise run lint
