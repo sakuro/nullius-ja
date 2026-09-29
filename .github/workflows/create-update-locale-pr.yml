@@ -2,6 +2,8 @@ name: Create update-locale PR
 
 env:
   MOD_NAME: nullius
+  # This job only runs factorix/jq/gh; skip building Lua
+  MISE_DISABLE_TOOLS: lua
 
 on: [workflow_dispatch]
 jobs:
