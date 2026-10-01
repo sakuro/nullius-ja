@@ -4,8 +4,8 @@
 
 This project manages its toolchain with [mise](https://mise.jdx.dev/). After cloning:
 
-1. `mise trust` — `mise.toml` defines `[env]` and `[hooks]`, which mise applies only for trusted configs.
-2. `mise install` — installs the pinned tools. Its `postinstall` hook then runs `hk install` to register this repository's Git hooks, and installs `luacheck` for static analysis.
+1. `mise trust`. `mise.toml` defines `[env]` and `[hooks]`, which mise applies only for trusted configs.
+2. `mise install` installs the pinned tools. Its `postinstall` hook then runs `hk install` to register this repository's Git hooks, and installs `luacheck` for static analysis.
 
 Review `hk.pkl` and the `git-hooks` package it imports before running the above: `hk install` configures hooks that execute on every commit and push. They enforce, among other things, that commit subjects start with a GitHub `:emoji:` code.
 
@@ -25,7 +25,7 @@ When opening a pull request:
 
 ## Comment conventions
 
-Public functions — `function Module.name(...)` and `function Module:name(...)` —
+Public functions (`function Module.name(...)` and `function Module:name(...)`)
 carry a doc comment in three layers:
 
 ```lua
@@ -39,29 +39,29 @@ carry a doc comment in three layers:
 function Module.round_up(value, size)
 ```
 
-- The **summary** is one line, required, and starts with a verb in the present
-  tense (`Decides ...`, `True when ...`). It is not a restatement of the
-  function's name.
-- The **rationale paragraph** is optional and says *why*, not *what*: behavior
+- The summary is one line, required, and starts with a verb in the present
+  tense (`Decides ...`, `True when ...`). It does not restate the function's
+  name.
+- The rationale paragraph is optional and says *why*, not *what*: behavior
   confirmed over RCON, a Factorio quirk being worked around, why the caller
   passes a value already extracted from the runtime. What the function does is
-  the summary's and the tags' job, so it is not repeated here. This is why one
-  function has a three-line comment and another fifteen: the difference is how
-  much rationale there is to record, not how carefully it was documented.
-- **`---@param`** appears once per declared parameter, in declaration order.
+  the summary's and the tags' job, so it is not repeated here. Comment length
+  therefore varies with how much rationale there is to record; one function
+  gets three lines and another fifteen.
+- `---@param` appears once per declared parameter, in declaration order.
   Obvious ones carry only a type; ones with a contract carry a note
   (`---@param filters LuaLogisticPoint.filters  plain array, already extracted by the caller`).
   `self` is implicit in a `:` declaration and is not documented. Varargs are
   `---@param ... <type>`.
-- **`---@return`** appears once per returned value, in order, and includes
+- `---@return` appears once per returned value, in order, and includes
   `|nil` when nil is a possible result (`---@return LuaTechnology|nil`). A
   function that returns nothing gets no tag.
 - Type names use the Factorio API's own spelling (`LuaPlayer`, `LuaLogisticPoint`,
-  `uint`) or plain Lua types (`string`, `number`, `boolean`, `table`). Nothing
-  reads these as types — no language server runs here — so they are documentation
-  for human readers, and a `table` whose shape matters is better described by the
-  API name it mirrors plus a note.
-- Comments **inside** a function body stay there. A comment explaining why one
+  `uint`) or plain Lua types (`string`, `number`, `boolean`, `table`). No
+  language server runs here, so nothing reads these as types. They are
+  documentation for human readers, and a `table` whose shape matters is better
+  described by the API name it mirrors plus a note.
+- Comments inside a function body stay there. A comment explaining why one
   line is the way it is belongs next to that line; only the description of the
   function itself belongs above it.
 - Comment lines wrap at about 88 columns, like the code around them; `luacheck`'s
@@ -80,16 +80,16 @@ function Module.round_up(value, size)
   where a reader looks. Locals that stay inside the module are the author's
   judgement call: document the ones that are not obvious from their name and a few
   lines of body. If a local is exported only so a spec can reach it, that export is
-  still public — either document it or test it through the public entry point.
+  still public, so either document it or test it through the public entry point.
 
 `mise run doc-check` enforces the mechanical half of this: a `---` block with a
 summary line, one `---@param` per declared parameter in the right order, and a
 `---@return` on any function that returns a value. It does not check types or
-prose. It reads every Lua file the mod loads — `lib/`, `prototypes/`, and the
+prose. It reads every Lua file the mod loads: `lib/`, `prototypes/`, and the
 stage entry points at the root. `spec/` is test code and `tools/` holds
 standalone dev scripts, so neither is in scope. CI runs it in the `lint` job.
 
-Should a batch of undocumented code arrive at once — a large import, say —
+When a batch of undocumented code arrives at once, such as a large import,
 `mise run doc-check -- --write-baseline > .doc-check-baseline` captures it and
 `--baseline .doc-check-baseline` in `tasks/doc-check` suppresses it while it is
 worked through. Such a list can only shrink: `doc-check` fails on an entry whose
@@ -120,13 +120,13 @@ Version: Unreleased
 ```
 
 Add later entries to that same section. Do not create a section for the next
-version number — the release workflow does the version bump.
+version number; the release workflow does the version bump.
 
 ## Scaffold drift
 
 This repository is generated from
 [`factorio-mod-scaffold`](https://github.com/sakuro/factorio-mod-scaffold). (In
-`factorio-mod-scaffold` itself this workflow is a deliberate no-op — there is no
+`factorio-mod-scaffold` itself this workflow is a deliberate no-op because there is no
 `.scaffold-sync.json`.) A weekly workflow
 (`.github/workflows/scaffold-drift.yml`) three-way merges the
 shared-infrastructure files listed in `.scaffold-sync.paths` against the current
@@ -134,32 +134,31 @@ scaffold and opens or updates one PR on branch `chore/scaffold-drift` when the
 scaffold has moved ahead. `.scaffold-sync.json` records the scaffold commit this
 repo was last synced to.
 
-**Reviewing a `chore/scaffold-drift` PR**
+### Reviewing a `chore/scaffold-drift` PR
 
-- The PR is opened with `GITHUB_TOKEN`, which does not trigger `pull_request`
-  workflows, so the drift workflow dispatches `lint.yml` (and `spec.yml`)
-  on the branch itself. To re-run them, use the Actions page or
-  `gh workflow run lint.yml --ref chore/scaffold-drift`.
+- The PR is opened with `GITHUB_TOKEN`, so its `pull_request` runs wait for
+  approval. Select "Approve workflows to run" on the PR, again after each
+  push to the branch.
 - Require the `format-check` and `lint` checks (and `spec`, if this repo has the
   test lane) to pass.
 - Check that MOD-specific content survived: `mise.toml` `[env] MOD_*`, any doc
   sections this repo added, real `spec/*_spec.lua`.
 - The PR body links the scaffold compare range and notes each conflict the skill
   resolved.
-- **Held-back paths.** An automated (CI) drift PR cannot carry changes under
+- An automated (CI) drift PR cannot carry changes under
   `.github/workflows/**` (`GITHUB_TOKEN` has no `workflows` permission) or under
   `.claude/**` (the CI agent's sandbox blocks writes there). The PR body's
   "Held back" section has a diff for each; the baseline is *not* bumped and the
   job keeps reporting drift until they are applied. A workflow diff that is only
-  `uses:` SHA/tag pin bumps can be left for Renovate; everything else — and every
-  `.claude/**` change — is applied by hand (a direct commit or a small PR). Then
+  `uses:` SHA/tag pin bumps can be left for Renovate. Everything else, including
+  every `.claude/**` change, is applied by hand (a direct commit or a small PR). Then
   set `.scaffold-sync.json` `commit` to the head SHA in the compare link and
   `synced_at` to the current UTC time. (Running `/resolve-scaffold-drift` locally
   in Claude Code has neither limit and applies everything.)
-- `changelog.txt` is intentionally untouched — tracked paths are `export-ignore`d
+- The PR leaves `changelog.txt` alone because tracked paths are `export-ignore`d
   development infrastructure.
 
-**When it runs**
+### When it runs
 
 Only with a `CLAUDE_CODE_OAUTH_TOKEN` repo secret set; blank means the workflow's
 gate step no-ops. A fork does not inherit the secret, so the workflow does
@@ -171,7 +170,7 @@ The first scheduled run can fail the action's `checkHumanActor` check because
 `github.actor` on a `schedule` event is not a `User`. If that happens, set the
 `claude-code-action` `allowed_bots` input in `scaffold-drift.yml`.
 
-**Authentication**
+### Authentication
 
 `CLAUDE_CODE_OAUTH_TOKEN` authenticates against a Claude subscription, so a run
 draws down subscription usage instead of Claude Console API credits. Generate it
@@ -182,8 +181,8 @@ gh secret set CLAUDE_CODE_OAUTH_TOKEN
 ```
 
 `bin/initialize` prompts for it when a MOD is created from the scaffold. That
-secret is the only out-of-band step — everything else rides along with the
-scaffold copy.
+secret is the only out-of-band step; everything else comes with the scaffold
+copy.
 
 The token does not auto-refresh (`anthropics/claude-code-action#727`). When it
 expires, every derived MOD fails in the same week with an identical signature:
@@ -203,14 +202,14 @@ gh workflow run scaffold-drift.yml -f debug=true
 Leave it off otherwise. Full output includes tool results, which may carry
 secrets, and a public repository's Actions logs are public too.
 
-**Test lane**
+### Test lane
 
 A repo with no `.busted` file has dropped the test lane. The sync never re-adds
 the test files (`.github/workflows/spec.yml`, `.busted`, `tasks/test`,
 `spec/helper.lua`) or the busted fragments in `mise.toml` /
-`.github/renovate.json`. Lua stays installed for luacheck.
+`.github/renovate.json` / `AGENTS.md`. Lua stays installed for luacheck.
 
-**If a sync looks wrong**
+### If a sync looks wrong
 
 Close the PR. The next weekly run force-pushes `chore/scaffold-drift` again and
 opens a fresh PR from the same baseline (the merge is recomputed each run). To

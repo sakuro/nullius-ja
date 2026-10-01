@@ -16,7 +16,7 @@ Run `mise tasks ls -l` to list tasks defined in this project. The `-l` (`--local
 
 ## Build and Install
 
-- `mise run install` - Install to local Factorio MOD directory. Uses `git archive` internally, so only committed files are included — commit changes before running.
+- `mise run install` - Install to local Factorio MOD directory. Uses `git archive` internally, so only committed files are included; commit changes before running.
 
 ## Temporary files
 
@@ -37,7 +37,7 @@ Changelog is managed by `factorix mod changelog` and follows Factorio's changelo
 
 `Version: Unreleased` marks the not-yet-released section. The release workflow renames it to the released version and does not open a new one, so between releases `changelog.txt` starts with the last released version. Add a fresh `Unreleased` section at the top for the first user-visible change of a new cycle; put later entries in that same section.
 
-Do not create a section for the next release version directly — version bumping is handled by the GitHub Actions release workflow.
+Do not create a section for the next release version directly; version bumping is handled by the GitHub Actions release workflow.
 
 # Document Map
 
@@ -50,3 +50,5 @@ Do not create a section for the next release version directly — version bumpin
 - [Factorio API](https://lua-api.factorio.com/latest/)
 - [Factorio Wiki](https://wiki.factorio.com/)
 - Game directories (mod dir, user dir, data dir, etc.): `factorix path --json | jq -r .<field>` (e.g. `.mod_dir`)
+- Other MODs: to investigate a MOD's contents, download it with `factorix mod download <mod-name> -d tmp` rather than guessing; if its source is on GitHub or Codeberg, refer to that as well
+- Game terminology: use the wording in the locale files under the data directory (`<data_dir>/<base|space-age|...>/locale/<lang>/*.cfg`) so that terms match the game
