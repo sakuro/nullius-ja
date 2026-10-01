@@ -229,8 +229,8 @@ local function check_file(path, found)
 end
 
 -- Returns the listed keys, their order, and whether the file was there at all.
--- A missing or misspelled path yields an empty baseline, which can only make the
--- check stricter -- every violation is then reported -- never weaker.
+-- A missing or misspelled path yields an empty baseline, so every violation is
+-- reported: the mistake can only make the check stricter.
 local function read_baseline(path)
   local listed, order = {}, {}
   local handle = path and io.open(path, "r")
@@ -274,8 +274,8 @@ for _, path in ipairs(paths) do
 end
 
 if write_baseline then
-  -- The header goes in the output so the regeneration command below is the
-  -- whole story -- no hand-restored preamble.
+  -- The header goes in the output so the regeneration command below recreates
+  -- the whole file, preamble included.
   print("# Public functions that predate the doc-comment convention")
   print('# (CONTRIBUTING.md "Comment conventions"). `mise run doc-check` suppresses')
   print("# these and reports any entry that is now documented or gone, so the list")
@@ -292,9 +292,8 @@ end
 local listed, order, baseline_present = read_baseline(baseline_path)
 local failures = {}
 
--- The baseline is scaffolding for a backlog, not a permanent file. Once the last
--- entry goes it has no reason to exist, and saying so here is what makes it
--- actually get deleted rather than linger as an empty file.
+-- The baseline only tracks a backlog. Once the last entry goes it has no reason
+-- to exist, so an empty baseline fails the check until the file is deleted.
 if baseline_present and #order == 0 then
   table.insert(failures, {
     path = baseline_path,
