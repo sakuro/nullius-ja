@@ -3,7 +3,7 @@
 
 local Good = {}
 
---- Reports nothing and takes nothing -- summary only, no tags needed.
+--- Reports nothing and takes nothing, so the summary alone is enough.
 function Good.register()
   Good.registered = true
 end
