@@ -5,7 +5,10 @@ env:
   # This job only runs factorix/jq/gh; skip building Lua
   MISE_DISABLE_TOOLS: lua
 
-on: [workflow_dispatch]
+on:
+  schedule:
+    - cron: "0 20 * * 3"   # Thu 05:00 JST (Wed 20:00 UTC)
+  workflow_dispatch:
 jobs:
   Create-Update-Locale-PR:
     runs-on: ubuntu-latest
@@ -68,6 +71,11 @@ jobs:
         run: |
           BRANCH_NAME="update-locale-${MOD_NAME}-${VERSION}"
           [[ -z "$(git status --porcelain=v2 --untracked locale/en)" ]] && exit 0
+          # A previous scheduled run may have already pushed this branch with its PR still open
+          if git ls-remote --exit-code --heads origin "${BRANCH_NAME}" > /dev/null; then
+            echo "Branch ${BRANCH_NAME} already exists; skipping"
+            exit 0
+          fi
 
           # shellcheck disable=SC2094  # rm before the redirect; the open fd reads the old file
           (rm -f info.json && jq -M --arg mod "${MOD_NAME}" --arg ver "${VERSION}" \
