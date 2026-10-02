@@ -16,7 +16,7 @@ hooks {
   }
   ["pre-commit"] {
     steps {
-      ["gitleaks"] = Builtins.gitleaks
+      ["gitleaks"] = (Builtins.gitleaks) { scan = "staged" }
       ["no-commit-to-branch"] = Builtins.no_commit_to_branch
       ["stylua"] {
         glob = "**/*.lua"

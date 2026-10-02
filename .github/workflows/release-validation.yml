@@ -11,15 +11,11 @@ env:
 on:
   pull_request:
     branches: [main]
-  # release-preparation.yml opens the release PR with GITHUB_TOKEN, which does
-  # not trigger pull_request workflows, so it dispatches this run instead.
-  workflow_dispatch:
 
 jobs:
   validate-release:
-    # Only run for release branches. head_ref is empty on workflow_dispatch;
-    # ref_name is then the dispatched branch.
-    if: startsWith(github.head_ref || github.ref_name, 'release-v')
+    # Only run for release branches
+    if: startsWith(github.head_ref, 'release-v')
     runs-on: ubuntu-latest
     permissions:
       contents: write      # Required for git tag push
@@ -30,12 +26,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
+        # The release tag is moved to HEAD below. On pull_request the default
+        # ref is the synthetic merge commit, which never lands on main.
+        ref: ${{ github.head_ref }}
         fetch-depth: 0
 
     - name: Extract version from branch name
       id: version
       env:
-        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        BRANCH_NAME: ${{ github.head_ref }}
       run: |
         VERSION=${BRANCH_NAME#release-v}
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
