@@ -1,12 +1,9 @@
 name: Lint
 
-# workflow_dispatch: scaffold-drift.yml dispatches this for its drift PR, which
-# GITHUB_TOKEN opens and pushes without triggering pull_request workflows.
 on:
   pull_request:
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   format-check:

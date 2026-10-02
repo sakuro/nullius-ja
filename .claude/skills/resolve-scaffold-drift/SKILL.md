@@ -63,12 +63,15 @@ Create a TODO per numbered step.
 
 6. **Test-lane fragments.** If this repo has no `.busted` file, the test lane is
    disabled. Remove these busted fragments from the merged `mise.toml` /
-   `.github/renovate.json` — drop any a clean merge pulled in from the scaffold,
-   and resolve conflicts in these regions toward removal:
+   `.github/renovate.json` / `AGENTS.md` — drop any a clean merge pulled in from
+   the scaffold, and resolve conflicts in these regions toward removal:
    - `mise.toml` `[hooks].postinstall` — the `luarocks install --local busted`
      array element, and the `# busted:` comment line.
    - `.github/renovate.json` `customManagers` — the `lunarmodules/busted` regex
      manager.
+   - `AGENTS.md` — the `## Tests` section. A section the scaffold adds next to it
+     makes the MOD's earlier removal conflict; keep the new section and leave
+     `## Tests` out.
    Keep the `lua` tool, the luacheck postinstall element, and the Renovate rule
    that disables `lua` updates: luacheck runs on Lua in every MOD. An earlier
    sync removed `lua` and that rule as test-lane fragments, and the three-way
