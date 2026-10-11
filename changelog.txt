@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
-Version: Unreleased
+Version: 0.6.3
+Date: 2026-10-11
   Changes:
     - Update locale for Nullius 2.0.12
     - Align Japanese terminology for land fill, exhaust turbines, pipeline extent and pump modes
