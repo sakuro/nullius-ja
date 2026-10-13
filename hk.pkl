@@ -31,7 +31,7 @@ hooks {
   ["pre-push"] {
     steps {
       ["case-conflict"] = Builtins.check_case_conflict
-      ["newlines"] = Builtins.newlines
+      ["newlines"] = (Builtins.newlines) { exclude = List("locale/en/**") }
     }
   }
 }
