@@ -145,16 +145,18 @@ repo was last synced to.
   sections this repo added, real `spec/*_spec.lua`.
 - The PR body links the scaffold compare range and notes each conflict the skill
   resolved.
-- An automated (CI) drift PR cannot carry changes under
-  `.github/workflows/**` (`GITHUB_TOKEN` has no `workflows` permission) or under
-  `.claude/**` (the CI agent's sandbox blocks writes there). The PR body's
-  "Held back" section has a diff for each; the baseline is *not* bumped and the
-  job keeps reporting drift until they are applied. A workflow diff that is only
-  `uses:` SHA/tag pin bumps can be left for Renovate. Everything else, including
-  every `.claude/**` change, is applied by hand (a direct commit or a small PR). Then
-  set `.scaffold-sync.json` `commit` to the head SHA in the compare link and
-  `synced_at` to the current UTC time. (Running `/resolve-scaffold-drift` locally
-  in Claude Code has neither limit and applies everything.)
+- A scaffold change to a workflow file that is only `uses:` SHA/tag pin bumps is
+  not synced. This repo's Renovate applies it, so it does not count as drift and
+  the PR lists the file as `PIN`.
+- An automated (CI) drift PR cannot carry other changes under
+  `.github/workflows/**` (`GITHUB_TOKEN` has no `workflows` permission) or any
+  change under `.claude/**` (the CI agent's sandbox blocks writes there). The PR
+  body's "Held back" section has a diff for each; the baseline is *not* bumped
+  and the job keeps reporting drift until they are applied by hand (a direct
+  commit or a small PR). Then set `.scaffold-sync.json` `commit` to the head SHA
+  in the compare link and `synced_at` to the current UTC time. (Running
+  `/resolve-scaffold-drift` locally in Claude Code has neither limit and applies
+  everything except `PIN` files.)
 - The PR leaves `changelog.txt` alone because tracked paths are `export-ignore`d
   development infrastructure.
 
@@ -162,7 +164,8 @@ repo was last synced to.
 
 Only with a `CLAUDE_CODE_OAUTH_TOKEN` repo secret set; blank means the workflow's
 gate step no-ops. A fork does not inherit the secret, so the workflow does
-nothing on a fork. GitHub disables a scheduled workflow in a public repository
+nothing on a fork. Scheduled workflows are also disabled by default in a
+fork (not in a repository generated from the template). GitHub disables a scheduled workflow in a public repository
 after 60 days without repository activity, so drift detection stops silently on
 a MOD that has gone quiet.
 
