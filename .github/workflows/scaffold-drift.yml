@@ -17,8 +17,9 @@ permissions:
   contents: write
   pull-requests: write
   # No `workflows` scope: GITHUB_TOKEN cannot be granted it, so a drift PR cannot
-  # carry `.github/workflows/**` changes. The skill holds those back into the PR
-  # body (see CONTRIBUTING.md "Held-back workflow files").
+  # carry `.github/workflows/**` changes. Changes that are only `uses:` pin bumps
+  # are left for Renovate; the skill holds the rest back into the PR body (see
+  # CONTRIBUTING.md "Reviewing a `chore/scaffold-drift` PR").
 
 # One drift run at a time: overlapping runs would both force-push
 # chore/scaffold-drift. Do not cancel a run in progress — it may be mid-PR.
@@ -72,11 +73,26 @@ jobs:
           git clone --filter=blob:none --no-checkout \
             https://github.com/sakuro/factorio-mod-scaffold /tmp/scaffold
           mapfile -t globs < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' .scaffold-sync.paths)
-          if git -C /tmp/scaffold diff --quiet "$base" origin/HEAD -- "${globs[@]}"; then
-            echo "drift=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "drift=true" >> "$GITHUB_OUTPUT"
-          fi
+          changed=$(git -C /tmp/scaffold diff --name-only "$base" origin/HEAD -- "${globs[@]}")
+          # A workflow file whose change is only `uses:` ref bumps is not drift:
+          # this MOD's Renovate converges it, and this run could not push it.
+          git -C /tmp/scaffold show origin/HEAD:.claude/skills/resolve-scaffold-drift/pin_only.sh > /tmp/pin_only.sh
+          drift=false
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            case $f in
+              .github/workflows/*)
+                if git -C /tmp/scaffold show "$base:$f" > /tmp/old 2>/dev/null \
+                   && git -C /tmp/scaffold show "origin/HEAD:$f" > /tmp/new 2>/dev/null \
+                   && bash /tmp/pin_only.sh /tmp/old /tmp/new; then
+                  echo "$f: only uses: pin bumps, left for Renovate" >&2
+                  continue
+                fi
+                ;;
+            esac
+            drift=true
+          done <<< "$changed"
+          echo "drift=$drift" >> "$GITHUB_OUTPUT"
 
       - name: Resolve drift
         if: steps.gate.outputs.proceed == 'true' && steps.check.outputs.drift == 'true'

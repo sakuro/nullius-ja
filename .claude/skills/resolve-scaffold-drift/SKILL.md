@@ -48,7 +48,10 @@ Create a TODO per numbered step.
    bash ≥ 4 (`declare -A`); on macOS use a non-system bash (Homebrew etc.),
    because bash 3.2 makes it exit 2 without merging anything. It applies clean
    results and prints one line per path:
-   `CLEAN` / `CREATE` / `DELETE` / `CONFLICT` / `SKIP`. Keep the output.
+   `CLEAN` / `CREATE` / `DELETE` / `CONFLICT` / `PIN` / `SKIP`. Keep the output.
+   `PIN` marks a workflow file whose scaffold-side change is only `uses:` ref
+   bumps; `merge.sh` leaves it untouched for this MOD's Renovate, and it needs
+   no action here.
    An `ERROR <path>` line means `merge.sh` could not process that path — stop
    and report it, do not commit.
 
@@ -97,9 +100,9 @@ Create a TODO per numbered step.
    - Revert / leave it unchanged locally: `git restore --staged --worktree -- <path>`.
    - Set `held_back=1`.
 
-   Workflow drift that is only `uses:` SHA/tag pin bumps needs no action — each
-   MOD's Renovate converges those. Structural changes (a new job, `permissions:`,
-   a model pin) and any `.claude/**` change need a hand-apply.
+   Pin-only workflow changes never reach this step (`merge.sh` reports them as
+   `PIN`). A workflow file staged here has some other change, so hold it back
+   even if most of its diff is `uses:` bumps.
 
 8. **Nothing to do?** If `git diff --cached --quiet` (nothing was staged by steps
    4–7, and step 9 has not written `.scaffold-sync.json` yet) **and** `held_back`
@@ -130,10 +133,9 @@ Create a TODO per numbered step.
        compare link `https://github.com/sakuro/factorio-mod-scaffold/compare/<base>...<head>`,
        and a short note on each conflict you resolved.
      - If `held_back` is set, add a `## Held back` section — one ` ```diff `
-       block per held-back path, and: "apply these by hand (a `.github/workflows/**`
-       diff that is only `uses:` SHA/tag bumps can instead be left for this MOD's
-       Renovate), then bump `.scaffold-sync.json` `commit` to `<head>` and
-       `synced_at` to now." State that the baseline was **not** bumped.
+       block per held-back path, and: "apply these by hand, then bump
+       `.scaffold-sync.json` `commit` to `<head>` and `synced_at` to now." State
+       that the baseline was **not** bumped.
    - `gh pr edit chore/scaffold-drift --add-label chore`.
    - Do not touch `changelog.txt`; every tracked path is `export-ignore`d dev
      infrastructure, invisible to MOD users.

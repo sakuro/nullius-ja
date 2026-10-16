@@ -45,6 +45,9 @@ bin.dat
 tasks/test
 spec/helper.lua
 dropped/
+.github/workflows/pinned.yml
+.github/workflows/pinned-same.yml
+.github/workflows/mixed.yml
 EOF
 printf 'v1\n'            > verbatim.txt
 printf 'a\nb\nc\nd\ne\n' > mergeable.txt
@@ -63,6 +66,13 @@ mkdir -p dropped
 printf 'same\n'          > dropped/same.txt   # theirs deletes; MOD unchanged -> DELETE
 printf 'mod\n'           > dropped/mod.txt    # theirs deletes; MOD modified -> CONFLICT
 printf 'kept\n'          > dropped/kept.txt   # theirs keeps (now MOD-owned) -> untouched
+# theirs bumps only `uses:` refs (pinned*), or a ref plus a new step (mixed.yml)
+wf() { # wf <ref> [extra-step]
+  printf 'jobs:\n  a:\n    steps:\n      - uses: o/x@%s # v1\n      - name: y\n        uses: o/y@%s # v1\n%s' "$1" "$1" "${2:-}"
+}
+wf aaa > .github/workflows/pinned.yml
+wf aaa > .github/workflows/pinned-same.yml
+wf aaa > .github/workflows/mixed.yml
 git_quiet add -A
 git_quiet commit -m ":seedling: base"
 base=$(git rev-parse HEAD)
@@ -79,6 +89,10 @@ printf '\x00\x01\x02BBBB\n'   > bin.dat          # NUL bytes -> git merge-file h
 grep -vx 'dropped/' .scaffold-sync.paths > paths.tmp && mv paths.tmp .scaffold-sync.paths
 git_quiet rm -q dropped/same.txt dropped/mod.txt
 printf 'kept v2\n'       > dropped/kept.txt     # still in the scaffold, just untracked
+wf bbb > .github/workflows/pinned.yml
+wf bbb > .github/workflows/pinned-same.yml
+wf bbb '      - run: z
+' > .github/workflows/mixed.yml
 git_quiet add -A
 git_quiet commit -m ":sparkles: theirs"
 
@@ -97,6 +111,10 @@ mkdir -p dropped
 printf 'same\n'          > dropped/same.txt     # unchanged from base
 printf 'mod\nlocal\n'    > dropped/mod.txt      # MOD changed it
 printf 'kept\n'          > dropped/kept.txt     # unchanged from base
+mkdir -p .github/workflows
+wf aaa > .github/workflows/pinned.yml           # Renovate has not caught up -> PIN, untouched
+wf bbb > .github/workflows/pinned-same.yml      # Renovate already bumped -> SKIP
+wf aaa > .github/workflows/mixed.yml            # structural change rides along -> CLEAN
 git_quiet add -A
 git_quiet commit -m ":seedling: mod"
 # no .busted, no .github/workflows/spec.yml -> test lane disabled
@@ -158,5 +176,15 @@ check "LINK.md not materialised as regular file" "absent-or-symlink" \
 check "bin.dat errored"              "ERROR bin.dat" "$(line 'bin.dat')"
 check "bin.dat not staged"            "" "$(git -C "$mod" diff --cached --name-only | grep -x 'bin.dat' || true)"
 check "bin.dat not truncated to empty" "AAAAlocal" "$(cat "$mod/bin.dat")"
+
+# --- workflow `uses:` pin bumps ---------------------------------------------
+# A change of only `uses:` refs is left to the MOD's Renovate; one that also
+# changes anything else merges as usual, pins included.
+check "pinned.yml left for Renovate"  "PIN .github/workflows/pinned.yml" "$(line '.github/workflows/pinned.yml')"
+check "pinned.yml untouched"          "$(wf aaa)" "$(cat .github/workflows/pinned.yml)"
+check "pinned.yml not staged"         "" "$(git -C "$mod" diff --cached --name-only | grep -x '.github/workflows/pinned.yml' || true)"
+check "pinned-same.yml skipped"       "SKIP .github/workflows/pinned-same.yml" "$(line '.github/workflows/pinned-same.yml')"
+check "mixed.yml merged"              "CLEAN .github/workflows/mixed.yml" "$(line '.github/workflows/mixed.yml')"
+check "mixed.yml content"             "$(wf bbb '      - run: z')" "$(cat .github/workflows/mixed.yml)"
 
 exit $fail

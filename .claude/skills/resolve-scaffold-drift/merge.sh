@@ -17,6 +17,9 @@
 #   CREATE <path>    file added from the scaffold
 #   DELETE <path>    file removed to follow the scaffold
 #   CONFLICT <path>  conflict markers written; needs a human / Claude decision
+#   PIN <path>       a .github/workflows/ file whose scaffold-side change is only
+#                    `uses:` ref bumps (see pin_only.sh); left for the MOD's
+#                    Renovate, file untouched
 #   SKIP <path>      no change (identical, scaffold untouched since the baseline,
 #                    a deletion the MOD made on purpose, or a symlink we refuse
 #                    to touch)
@@ -44,6 +47,7 @@ git -C "$scaffold" rev-parse --verify --quiet "$base^{commit}" >/dev/null \
   || { echo "merge.sh: $base is not a commit in $scaffold" >&2; exit 2; }
 
 theirs_ref=HEAD  # the scaffold clone sits at the tip of its default branch
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 # Print the entries of a .scaffold-sync.paths file read from stdin, one per line.
 path_entries() {
@@ -115,6 +119,14 @@ for path in $(printf '%s\n' "${!seen[@]}" | LC_ALL=C sort); do
     git -C "$scaffold" show "$theirs_ref:$path" > "$t"; ht=1
   fi
   if [ -f "$path" ]; then cp "$path" "$o"; ho=1; fi
+
+  if [[ $path == .github/workflows/* ]] && [ $hb -eq 1 ] && [ $ht -eq 1 ] \
+     && ! cmp -s "$b" "$t" && ! { [ $ho -eq 1 ] && cmp -s "$t" "$o"; } \
+     && bash "$here/pin_only.sh" "$b" "$t"; then
+    status PIN "$path"
+    rm -rf "$tmp"
+    continue
+  fi
 
   if [ $ht -eq 1 ] && [ $ho -eq 0 ]; then
     if [ $hb -eq 1 ] && cmp -s "$b" "$t"; then
