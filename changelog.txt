@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
-Version: Unreleased
+Version: 0.7.0
+Date: 2026-10-17
   Changes:
     - Support Factorio 2.1
     - Update locale for Nullius 2.1.0
