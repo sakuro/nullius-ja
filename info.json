@@ -6,6 +6,6 @@
   "author": "sakuro",
   "description": "This MOD provides Japanese translation to Nullius overhaul MOD",
   "dependencies": [
-    "nullius >= 2.0.12"
+    "nullius >= 2.1.0"
   ]
 }
