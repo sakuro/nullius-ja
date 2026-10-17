@@ -4,7 +4,7 @@
 
 ## Summary
 
-This MOD provides Japanese translation to Nullius overhaul MOD.
+This mod provides Japanese translation to Nullius overhaul mod.
 
 ## License
 

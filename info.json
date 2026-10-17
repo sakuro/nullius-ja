@@ -4,7 +4,7 @@
   "factorio_version": "2.1",
   "title": "Japanese translation for Nullius",
   "author": "sakuro",
-  "description": "This MOD provides Japanese translation to Nullius overhaul MOD",
+  "description": "This mod provides Japanese translation to Nullius overhaul mod",
   "dependencies": [
     "nullius >= 2.1.0"
   ]

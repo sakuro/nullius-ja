@@ -46,7 +46,7 @@ jobs:
           factorix mod show "${MOD_NAME}" --json
           echo "version=$(factorix mod show "${MOD_NAME}" --json | jq -rM .latest_version)" >> "$GITHUB_OUTPUT"
 
-      - name: Download latest MOD
+      - name: Download latest mod
         env:
           VERSION: ${{ steps.latest_version.outputs.version }}
           FACTORIO_USERNAME: ${{ secrets.FACTORIO_USERNAME }}
