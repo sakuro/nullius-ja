@@ -33,5 +33,8 @@ spec/helper.lua
 tools/doc_check.lua
 tools/doc_check_test.sh
 tools/doc_check_fixtures
+.claude/skills/factorio-changelog
+.claude/skills/factorio-portal-description
+.claude/skills/factorio-rcon-eval
 .claude/skills/resolve-scaffold-drift
 .scaffold-sync.paths

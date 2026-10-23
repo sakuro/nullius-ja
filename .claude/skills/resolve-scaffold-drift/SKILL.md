@@ -49,9 +49,13 @@ Create a TODO per numbered step.
    because bash 3.2 makes it exit 2 without merging anything. It applies clean
    results and prints one line per path:
    `CLEAN` / `CREATE` / `DELETE` / `CONFLICT` / `PIN` / `SKIP`. Keep the output.
-   `PIN` marks a workflow file whose scaffold-side change is only `uses:` ref
-   bumps; `merge.sh` leaves it untouched for this MOD's Renovate, and it needs
-   no action here.
+   `PIN` marks a file whose scaffold-side change is only versions Renovate
+   manages (workflow `uses:` refs; `mise.toml` and `hk.pkl` tool and package
+   versions); `merge.sh` leaves it untouched for this MOD's Renovate, and it
+   needs no action here. When such a file also has other changes, `merge.sh`
+   merges those and keeps this MOD's versions (then the baseline's, then the
+   scaffold's for a line the MOD lacks), so a version never needs resolving by
+   hand.
    An `ERROR <path>` line means `merge.sh` could not process that path — stop
    and report it, do not commit.
 
@@ -59,8 +63,8 @@ Create a TODO per numbered step.
    the `<<<<<<< ours` / `||||||| base` / `>>>>>>> theirs` markers by hand:
    - Keep MOD-specific content: `mise.toml` `[env] MOD_LICENSE/MOD_CATEGORY/MOD_TAGS`,
      `AGENTS.md` / `CONTRIBUTING.md` sections the MOD added, real `spec/*_spec.lua`.
-   - Version-line conflicts (a tool version in `mise.toml`, a pinned action SHA):
-     take the **newer** version. Never downgrade.
+   - Version lines Renovate manages never conflict (see step 4). For any other
+     version-like conflict, take the **newer** version. Never downgrade.
    - Otherwise take the scaffold's intent.
    `git add` each resolved file.
 
@@ -100,9 +104,9 @@ Create a TODO per numbered step.
    - Revert / leave it unchanged locally: `git restore --staged --worktree -- <path>`.
    - Set `held_back=1`.
 
-   Pin-only workflow changes never reach this step (`merge.sh` reports them as
-   `PIN`). A workflow file staged here has some other change, so hold it back
-   even if most of its diff is `uses:` bumps.
+   Pin-only changes never reach this step (`merge.sh` reports them as `PIN`).
+   A workflow file staged here has some other change, so hold it back even if
+   most of its diff is `uses:` bumps.
 
 8. **Nothing to do?** If `git diff --cached --quiet` (nothing was staged by steps
    4–7, and step 9 has not written `.scaffold-sync.json` yet) **and** `held_back`
@@ -147,8 +151,12 @@ Create a TODO per numbered step.
 - `merge.sh` already skips the four test-lane whole files
   (`.github/workflows/spec.yml`, `.busted`, `tasks/test`, `spec/helper.lua`) when
   `.busted` is absent; step 6 is only the fragments inside files that stay.
+- `pin_only.sh` and `pins.pl` decide what counts as a Renovate-managed version;
+  `scaffold-drift.yml`'s pre-check uses them too. `pins.pl` mirrors
+  `.github/renovate.json`'s managers, so extend both together when Renovate
+  starts managing another kind of version.
 - `merge_test.sh` is the fixture test for `merge.sh`, and no workflow runs it.
-  After changing `merge.sh`, run `bash .claude/skills/resolve-scaffold-drift/merge_test.sh`
+  After changing `merge.sh`, `pin_only.sh` or `pins.pl`, run `bash .claude/skills/resolve-scaffold-drift/merge_test.sh`
   locally. Like `merge.sh`, it needs bash ≥ 4 (not the macOS system bash 3.2).
 - If `merge.sh` prints `CONFLICT` for a delete/modify case (scaffold deleted a
   file this repo still changes, or vice versa), decide per file: usually follow

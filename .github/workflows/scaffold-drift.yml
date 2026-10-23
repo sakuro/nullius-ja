@@ -17,8 +17,8 @@ permissions:
   contents: write
   pull-requests: write
   # No `workflows` scope: GITHUB_TOKEN cannot be granted it, so a drift PR cannot
-  # carry `.github/workflows/**` changes. Changes that are only `uses:` pin bumps
-  # are left for Renovate; the skill holds the rest back into the PR body (see
+  # carry `.github/workflows/**` changes. Changes that are only Renovate-managed
+  # version bumps are left for Renovate; the skill holds the rest back into the PR body (see
   # CONTRIBUTING.md "Reviewing a `chore/scaffold-drift` PR").
 
 # One drift run at a time: overlapping runs would both force-push
@@ -74,22 +74,22 @@ jobs:
             https://github.com/sakuro/factorio-mod-scaffold /tmp/scaffold
           mapfile -t globs < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' .scaffold-sync.paths)
           changed=$(git -C /tmp/scaffold diff --name-only "$base" origin/HEAD -- "${globs[@]}")
-          # A workflow file whose change is only `uses:` ref bumps is not drift:
-          # this MOD's Renovate converges it, and this run could not push it.
-          git -C /tmp/scaffold show origin/HEAD:.claude/skills/resolve-scaffold-drift/pin_only.sh > /tmp/pin_only.sh
+          # A file whose change is only versions Renovate manages (workflow `uses:`
+          # refs, mise.toml and *.pkl versions) is not drift: this MOD's Renovate
+          # converges it, and a workflow change could not be pushed by this run anyway.
+          mkdir /tmp/pins
+          for helper in pin_only.sh pins.pl; do
+            git -C /tmp/scaffold show "origin/HEAD:.claude/skills/resolve-scaffold-drift/$helper" > "/tmp/pins/$helper"
+          done
           drift=false
           while IFS= read -r f; do
             [ -n "$f" ] || continue
-            case $f in
-              .github/workflows/*)
-                if git -C /tmp/scaffold show "$base:$f" > /tmp/old 2>/dev/null \
-                   && git -C /tmp/scaffold show "origin/HEAD:$f" > /tmp/new 2>/dev/null \
-                   && bash /tmp/pin_only.sh /tmp/old /tmp/new; then
-                  echo "$f: only uses: pin bumps, left for Renovate" >&2
-                  continue
-                fi
-                ;;
-            esac
+            if git -C /tmp/scaffold show "$base:$f" > /tmp/old 2>/dev/null \
+               && git -C /tmp/scaffold show "origin/HEAD:$f" > /tmp/new 2>/dev/null \
+               && bash /tmp/pins/pin_only.sh /tmp/old /tmp/new "$f"; then
+              echo "$f: only Renovate-managed version bumps, left for Renovate" >&2
+              continue
+            fi
             drift=true
           done <<< "$changed"
           echo "drift=$drift" >> "$GITHUB_OUTPUT"

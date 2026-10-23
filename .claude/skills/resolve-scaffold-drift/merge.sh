@@ -17,9 +17,10 @@
 #   CREATE <path>    file added from the scaffold
 #   DELETE <path>    file removed to follow the scaffold
 #   CONFLICT <path>  conflict markers written; needs a human / Claude decision
-#   PIN <path>       a .github/workflows/ file whose scaffold-side change is only
-#                    `uses:` ref bumps (see pin_only.sh); left for the MOD's
-#                    Renovate, file untouched
+#   PIN <path>       a file whose scaffold-side change is only versions Renovate
+#                    manages -- workflow `uses:` refs, mise.toml and *.pkl
+#                    versions (see pin_only.sh); left for the MOD's Renovate,
+#                    file untouched
 #   SKIP <path>      no change (identical, scaffold untouched since the baseline,
 #                    a deletion the MOD made on purpose, or a symlink we refuse
 #                    to touch)
@@ -120,12 +121,34 @@ for path in $(printf '%s\n' "${!seen[@]}" | LC_ALL=C sort); do
   fi
   if [ -f "$path" ]; then cp "$path" "$o"; ho=1; fi
 
-  if [[ $path == .github/workflows/* ]] && [ $hb -eq 1 ] && [ $ht -eq 1 ] \
+  if [ $hb -eq 1 ] && [ $ht -eq 1 ] \
      && ! cmp -s "$b" "$t" && ! { [ $ho -eq 1 ] && cmp -s "$t" "$o"; } \
-     && bash "$here/pin_only.sh" "$b" "$t"; then
+     && bash "$here/pin_only.sh" "$b" "$t" "$path"; then
     status PIN "$path"
     rm -rf "$tmp"
     continue
+  fi
+
+  # The change is not pin-only, so merge it -- but keep the versions Renovate
+  # manages out of the merge: the MOD's own win, then the baseline's (a line the
+  # MOD removed), then the scaffold's (a line the scaffold added). Otherwise a
+  # scaffold-side bump would ride along, or conflict with the MOD's Renovate.
+  if [ $ht -eq 1 ] && [ $ho -eq 1 ]; then
+    sources=("$o"); [ $hb -eq 1 ] && sources+=("$b"); sources+=("$t")
+    retarget_failed=0
+    for f in "$t" "$b"; do
+      [ -f "$f" ] || continue
+      if perl "$here/pins.pl" retarget "$path" "$f" "${sources[@]}" > "$tmp/retargeted"; then
+        cp "$tmp/retargeted" "$f"
+      else
+        retarget_failed=1
+      fi
+    done
+    if [ $retarget_failed -eq 1 ]; then
+      status ERROR "$path"
+      rm -rf "$tmp"
+      continue
+    fi
   fi
 
   if [ $ht -eq 1 ] && [ $ho -eq 0 ]; then
