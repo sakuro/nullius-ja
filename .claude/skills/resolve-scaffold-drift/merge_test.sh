@@ -48,6 +48,10 @@ dropped/
 .github/workflows/pinned.yml
 .github/workflows/pinned-same.yml
 .github/workflows/mixed.yml
+pinned/mise.toml
+pinned/hk.pkl
+mixed/mise.toml
+removed/mise.toml
 EOF
 printf 'v1\n'            > verbatim.txt
 printf 'a\nb\nc\nd\ne\n' > mergeable.txt
@@ -73,6 +77,20 @@ wf() { # wf <ref> [extra-step]
 wf aaa > .github/workflows/pinned.yml
 wf aaa > .github/workflows/pinned-same.yml
 wf aaa > .github/workflows/mixed.yml
+# Renovate-managed versions in mise.toml / *.pkl, in three shapes: version-only
+# (pinned), versions plus other changes (mixed), and a line the MOD removed.
+mkdir -p pinned mixed removed
+mise() { # mise <hk> <foo> <lua> <busted> <min-age> [extra-tool-line]
+  printf '[tools]\nhk = "%s"\n"github:o/foo" = "%s" # keep\nlua = "%s"\n%s\n[hooks]\npostinstall = [\n  %s\n]\n[settings]\nminimum_release_age = "%s"\n' \
+    "$1" "$2" "$3" "${6:-}" "'luarocks install --local busted $4'" "$5"
+}
+pkl() { # pkl <version>
+  printf 'amends "package://github.com/jdx/hk/releases/download/v%s/hk@%s#/Config.pkl"\nlocal x = 1\n' "$1" "$1"
+}
+mise 1.0.0 1.0.0 5.2 2.3.0 3d > pinned/mise.toml
+pkl 1.0.0                      > pinned/hk.pkl
+mise 1.0.0 1.0.0 5.2 2.3.0 3d > mixed/mise.toml
+mise 1.0.0 1.0.0 5.2 2.3.0 3d > removed/mise.toml
 git_quiet add -A
 git_quiet commit -m ":seedling: base"
 base=$(git rev-parse HEAD)
@@ -93,6 +111,11 @@ wf bbb > .github/workflows/pinned.yml
 wf bbb > .github/workflows/pinned-same.yml
 wf bbb '      - run: z
 ' > .github/workflows/mixed.yml
+mise 1.1.0 1.1.0 5.2 2.4.0 3d > pinned/mise.toml
+pkl 1.1.0                      > pinned/hk.pkl
+# lua and [settings] are not Renovate-managed here; bar is a new tool
+mise 1.1.0 1.1.0 5.4 2.4.0 5d 'bar = "9.0.0"' > mixed/mise.toml
+mise 1.1.0 1.1.0 5.2 2.4.0 5d > removed/mise.toml
 git_quiet add -A
 git_quiet commit -m ":sparkles: theirs"
 
@@ -115,6 +138,11 @@ mkdir -p .github/workflows
 wf aaa > .github/workflows/pinned.yml           # Renovate has not caught up -> PIN, untouched
 wf bbb > .github/workflows/pinned-same.yml      # Renovate already bumped -> SKIP
 wf aaa > .github/workflows/mixed.yml            # structural change rides along -> CLEAN
+mkdir -p pinned mixed removed
+mise 1.0.0 1.0.0 5.2 2.3.0 3d > pinned/mise.toml    # Renovate has not caught up -> PIN, untouched
+pkl 1.0.0                      > pinned/hk.pkl
+mise 1.5.0 1.0.0 5.2 2.3.1 3d > mixed/mise.toml     # Renovate bumped hk and busted past theirs -> keep
+mise 1.0.0 1.0.0 5.2 2.3.0 3d | grep -v '"github:o/foo"' > removed/mise.toml  # MOD dropped foo
 git_quiet add -A
 git_quiet commit -m ":seedling: mod"
 # no .busted, no .github/workflows/spec.yml -> test lane disabled
@@ -186,5 +214,17 @@ check "pinned.yml not staged"         "" "$(git -C "$mod" diff --cached --name-o
 check "pinned-same.yml skipped"       "SKIP .github/workflows/pinned-same.yml" "$(line '.github/workflows/pinned-same.yml')"
 check "mixed.yml merged"              "CLEAN .github/workflows/mixed.yml" "$(line '.github/workflows/mixed.yml')"
 check "mixed.yml content"             "$(wf bbb '      - run: z')" "$(cat .github/workflows/mixed.yml)"
+
+# --- Renovate-managed versions in mise.toml / *.pkl ----------------------------
+check "pinned/mise.toml left for Renovate" "PIN pinned/mise.toml" "$(line 'pinned/mise.toml')"
+check "pinned/mise.toml untouched"  "$(mise 1.0.0 1.0.0 5.2 2.3.0 3d)" "$(cat pinned/mise.toml)"
+check "pinned/hk.pkl left for Renovate"    "PIN pinned/hk.pkl" "$(line 'pinned/hk.pkl')"
+check "pinned/hk.pkl untouched"     "$(pkl 1.0.0)" "$(cat pinned/hk.pkl)"
+check "mixed/mise.toml merged"      "CLEAN mixed/mise.toml" "$(line 'mixed/mise.toml')"
+# hk, foo and busted keep this MOD's versions; lua, [settings] and the new tool come from the scaffold.
+check "mixed/mise.toml content"     "$(mise 1.5.0 1.0.0 5.4 2.3.1 5d 'bar = "9.0.0"')" "$(cat mixed/mise.toml)"
+# foo was removed here, so its scaffold-side bump must not bring the line back.
+check "removed/mise.toml merged"    "CLEAN removed/mise.toml" "$(line 'removed/mise.toml')"
+check "removed/mise.toml content"   "$(mise 1.0.0 1.0.0 5.2 2.3.0 5d | grep -v '"github:o/foo"')" "$(cat removed/mise.toml)"
 
 exit $fail

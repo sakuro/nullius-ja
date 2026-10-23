@@ -145,9 +145,11 @@ repo was last synced to.
   sections this repo added, real `spec/*_spec.lua`.
 - The PR body links the scaffold compare range and notes each conflict the skill
   resolved.
-- A scaffold change to a workflow file that is only `uses:` SHA/tag pin bumps is
-  not synced. This repo's Renovate applies it, so it does not count as drift and
-  the PR lists the file as `PIN`.
+- A scaffold change that is only versions Renovate manages (workflow `uses:`
+  SHA/tag pins, `mise.toml` tool and `luarocks install` versions, `hk.pkl`
+  package versions) is not synced. This repo's Renovate applies it, so it does
+  not count as drift and the PR lists the file as `PIN`. When such a file also
+  has other changes, those are merged and the versions stay as this repo has them.
 - An automated (CI) drift PR cannot carry other changes under
   `.github/workflows/**` (`GITHUB_TOKEN` has no `workflows` permission) or any
   change under `.claude/**` (the CI agent's sandbox blocks writes there). The PR
