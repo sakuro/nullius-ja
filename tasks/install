@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Install MOD locally"
+#MISE description="Install mod locally"
 #MISE depends=["build"]
 set -euo pipefail
 

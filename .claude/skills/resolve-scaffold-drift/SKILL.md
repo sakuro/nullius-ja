@@ -35,7 +35,7 @@ Create a TODO per numbered step.
      authored date with `git log --reverse --format=%aI | head -1`, then find the
      scaffold commit that was current then, using the clone from step 2:
      `git -C <clone> rev-list -1 --before="<date>" origin/HEAD`.
-     If that prints nothing — the MOD's history predates the scaffold's — fall
+     If that prints nothing — the mod's history predates the scaffold's — fall
      back to the scaffold's root commit:
      `git -C <clone> rev-list --max-parents=0 origin/HEAD | tail -1`.
      Show the resulting SHA and ask the user to confirm before continuing.
@@ -51,18 +51,18 @@ Create a TODO per numbered step.
    `CLEAN` / `CREATE` / `DELETE` / `CONFLICT` / `PIN` / `SKIP`. Keep the output.
    `PIN` marks a file whose scaffold-side change is only versions Renovate
    manages (workflow `uses:` refs; `mise.toml` and `hk.pkl` tool and package
-   versions); `merge.sh` leaves it untouched for this MOD's Renovate, and it
+   versions); `merge.sh` leaves it untouched for this mod's Renovate, and it
    needs no action here. When such a file also has other changes, `merge.sh`
-   merges those and keeps this MOD's versions (then the baseline's, then the
-   scaffold's for a line the MOD lacks), so a version never needs resolving by
+   merges those and keeps this mod's versions (then the baseline's, then the
+   scaffold's for a line the mod lacks), so a version never needs resolving by
    hand.
    An `ERROR <path>` line means `merge.sh` could not process that path — stop
    and report it, do not commit.
 
 5. **Resolve conflicts.** For every `CONFLICT <path>`, open the file and resolve
    the `<<<<<<< ours` / `||||||| base` / `>>>>>>> theirs` markers by hand:
-   - Keep MOD-specific content: `mise.toml` `[env] MOD_LICENSE/MOD_CATEGORY/MOD_TAGS`,
-     `AGENTS.md` / `CONTRIBUTING.md` sections the MOD added, real `spec/*_spec.lua`.
+   - Keep mod-specific content: `mise.toml` `[env] MOD_LICENSE/MOD_CATEGORY/MOD_TAGS`,
+     `AGENTS.md` / `CONTRIBUTING.md` sections the mod added, real `spec/*_spec.lua`.
    - Version lines Renovate manages never conflict (see step 4). For any other
      version-like conflict, take the **newer** version. Never downgrade.
    - Otherwise take the scaffold's intent.
@@ -77,10 +77,10 @@ Create a TODO per numbered step.
    - `.github/renovate.json` `customManagers` — the `lunarmodules/busted` regex
      manager.
    - `AGENTS.md` — the `## Tests` section. A section the scaffold adds next to it
-     makes the MOD's earlier removal conflict; keep the new section and leave
+     makes the mod's earlier removal conflict; keep the new section and leave
      `## Tests` out.
    Keep the `lua` tool, the luacheck postinstall element, and the Renovate rule
-   that disables `lua` updates: luacheck runs on Lua in every MOD. An earlier
+   that disables `lua` updates: luacheck runs on Lua in every mod. An earlier
    sync removed `lua` and that rule as test-lane fragments, and the three-way
    merge preserves that removal, so copy any that are missing from the scaffold.
    `git add` the results.
@@ -142,7 +142,7 @@ Create a TODO per numbered step.
        that the baseline was **not** bumped.
    - `gh pr edit chore/scaffold-drift --add-label chore`.
    - Do not touch `changelog.txt`; every tracked path is `export-ignore`d dev
-     infrastructure, invisible to MOD users.
+     infrastructure, invisible to mod users.
 
 11. **Clean up.** Remove the clone.
 
@@ -160,12 +160,12 @@ Create a TODO per numbered step.
   locally. Like `merge.sh`, it needs bash ≥ 4 (not the macOS system bash 3.2).
 - If `merge.sh` prints `CONFLICT` for a delete/modify case (scaffold deleted a
   file this repo still changes, or vice versa), decide per file: usually follow
-  the scaffold unless the MOD clearly depends on it, and mention it in the PR body.
+  the scaffold unless the mod clearly depends on it, and mention it in the PR body.
 - A file the baseline's `.scaffold-sync.paths` tracked but the current list
   drops is handled like a scaffold-side deletion when the scaffold deleted it
-  too (`DELETE` if unmodified, `CONFLICT` if the MOD changed it). If the scaffold
-  still has it, it is no longer shared and `merge.sh` leaves the MOD's copy alone.
-- Always operate on the checked-out working tree. Never rebuild the MOD from
+  too (`DELETE` if unmodified, `CONFLICT` if the mod changed it). If the scaffold
+  still has it, it is no longer shared and `merge.sh` leaves the mod's copy alone.
+- Always operate on the checked-out working tree. Never rebuild the mod from
   `git archive` — this repo's `.gitattributes` marks the scaffold-tracked files
   (`.busted`, `.github/**`, `tasks/**`, `mise.toml`, …) `export-ignore`, so an
   archive drops exactly what this skill syncs.

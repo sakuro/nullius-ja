@@ -34,7 +34,7 @@ end
 
 -- Strips comments and string literals so keyword counting can't be fooled by
 -- the word "end" inside a message. Long strings and long comments (`[[...]]`)
--- are not handled; no MOD source uses them yet.
+-- are not handled; no mod source uses them yet.
 local function code_only(line)
   local stripped = line:gsub('"[^"]*"', '""'):gsub("'[^']*'", "''")
   return (stripped:gsub("%-%-.*$", ""))

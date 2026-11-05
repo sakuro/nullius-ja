@@ -1,10 +1,10 @@
 ---
 name: factorio-changelog
-description: Generates changelog entries for Factorio MODs from commits since the last release. Use when the user wants to update changelog.txt, add changelog entries, or document changes for a Factorio MOD.
+description: Generates changelog entries for Factorio mods from commits since the last release. Use when the user wants to update changelog.txt, add changelog entries, or document changes for a Factorio mod.
 allowed-tools: [Bash, Read, Grep]
 ---
 
-# Factorio MOD Changelog Generation Skill
+# Factorio Mod Changelog Generation Skill
 
 Analyzes commits since the last release and adds user-facing changes to `changelog.txt` using `factorix mod changelog add`.
 

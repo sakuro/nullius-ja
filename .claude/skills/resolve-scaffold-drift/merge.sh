@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Three-way merge of scaffold-tracked files into the current derived MOD.
+# Three-way merge of scaffold-tracked files into the current derived mod.
 #
 # Usage: merge.sh <scaffold-clone-dir> <baseline-sha>
 #
 #   <scaffold-clone-dir>  a clone of factorio-mod-scaffold, checked out at the
 #                         tip of its default branch (this is "theirs")
-#   <baseline-sha>        the scaffold commit the MOD was last synced to, from
+#   <baseline-sha>        the scaffold commit the mod was last synced to, from
 #                         .scaffold-sync.json ".commit" (this is the merge base)
 #
-# Run from the derived MOD's repo root ("ours"). Applies clean results to the
+# Run from the derived mod's repo root ("ours"). Applies clean results to the
 # working tree (writing files, `git add -f`, `git rm -f`) and prints one line per
-# path. `-f` because a mid-rollout MOD may still have a stale .gitignore that
+# path. `-f` because a mid-rollout mod may still have a stale .gitignore that
 # excludes .claude/ -- every path here is a designated tracked path.
 #
 #   CLEAN <path>     three-way merge applied, no conflict
@@ -19,10 +19,10 @@
 #   CONFLICT <path>  conflict markers written; needs a human / Claude decision
 #   PIN <path>       a file whose scaffold-side change is only versions Renovate
 #                    manages -- workflow `uses:` refs, mise.toml and *.pkl
-#                    versions (see pin_only.sh); left for the MOD's Renovate,
+#                    versions (see pin_only.sh); left for the mod's Renovate,
 #                    file untouched
 #   SKIP <path>      no change (identical, scaffold untouched since the baseline,
-#                    a deletion the MOD made on purpose, or a symlink we refuse
+#                    a deletion the mod made on purpose, or a symlink we refuse
 #                    to touch)
 #   ERROR <path>     merge.sh could not process the path (e.g. `git merge-file`
 #                    hard error); the caller must stop and report, not commit
@@ -74,7 +74,7 @@ done < <(path_entries < "$paths_file")
 # A file the baseline's list tracked that the current list does not. If the
 # scaffold deleted it too, it goes through the same scaffold-side deletion as any
 # tracked file: an unmodified copy is DELETEd, a modified one is a CONFLICT. A
-# file the scaffold still has is no longer shared and stays the MOD's. A
+# file the scaffold still has is no longer shared and stays the mod's. A
 # baseline without the list (it predates .scaffold-sync.paths) drops nothing.
 if git -C "$scaffold" cat-file -e "$base:.scaffold-sync.paths" 2>/dev/null; then
   while IFS= read -r entry; do
@@ -87,7 +87,7 @@ if git -C "$scaffold" cat-file -e "$base:.scaffold-sync.paths" 2>/dev/null; then
 fi
 
 # --- test-lane auto-detection ------------------------------------------------
-# No .busted in the MOD -> it has dropped the test lane; never resurrect these.
+# No .busted in the mod -> it has dropped the test lane; never resurrect these.
 if [ ! -e .busted ]; then
   # shellcheck disable=SC2034  # $p is expanded by `unset` itself; the single
   # quotes only keep the subscript from being treated as a glob.
@@ -130,9 +130,9 @@ for path in $(printf '%s\n' "${!seen[@]}" | LC_ALL=C sort); do
   fi
 
   # The change is not pin-only, so merge it -- but keep the versions Renovate
-  # manages out of the merge: the MOD's own win, then the baseline's (a line the
-  # MOD removed), then the scaffold's (a line the scaffold added). Otherwise a
-  # scaffold-side bump would ride along, or conflict with the MOD's Renovate.
+  # manages out of the merge: the mod's own win, then the baseline's (a line the
+  # mod removed), then the scaffold's (a line the scaffold added). Otherwise a
+  # scaffold-side bump would ride along, or conflict with the mod's Renovate.
   if [ $ht -eq 1 ] && [ $ho -eq 1 ]; then
     sources=("$o"); [ $hb -eq 1 ] && sources+=("$b"); sources+=("$t")
     retarget_failed=0
@@ -153,9 +153,9 @@ for path in $(printf '%s\n' "${!seen[@]}" | LC_ALL=C sort); do
 
   if [ $ht -eq 1 ] && [ $ho -eq 0 ]; then
     if [ $hb -eq 1 ] && cmp -s "$b" "$t"; then
-      status SKIP "$path"                       # MOD deleted it, scaffold unchanged
+      status SKIP "$path"                       # Mod deleted it, scaffold unchanged
     elif [ $hb -eq 1 ]; then
-      status CONFLICT "$path"                   # MOD deleted, scaffold changed
+      status CONFLICT "$path"                   # Mod deleted, scaffold changed
     else
       mkdir -p "$(dirname "$path")"
       cp "$t" "$path"
@@ -167,7 +167,7 @@ for path in $(printf '%s\n' "${!seen[@]}" | LC_ALL=C sort); do
     if [ $hb -eq 1 ] && cmp -s "$b" "$o"; then
       if git rm -q -f -- "$path"; then status DELETE "$path"; else status SKIP "$path"; fi
     elif [ $hb -eq 1 ]; then
-      status CONFLICT "$path"                   # scaffold deleted, MOD modified
+      status CONFLICT "$path"                   # scaffold deleted, mod modified
     else
       status SKIP "$path"                       # exists only in ours
     fi

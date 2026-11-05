@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Fixture test for merge.sh. Builds a scaffold repo (with a baseline commit and a
-# newer HEAD) and a derived-MOD repo, runs merge.sh, and asserts the status lines
+# newer HEAD) and a derived-mod repo, runs merge.sh, and asserts the status lines
 # and resulting file contents.
 set -uo pipefail
 
@@ -29,7 +29,7 @@ mkdir -p "$scaffold"/.claude/skills/resolve-scaffold-drift "$scaffold"/tasks
 cd "$scaffold" || exit 1
 git_quiet init
 # a small deterministic path list for the fixture (not the real one).
-# All four test-lane entries merge.sh drops for a no-.busted MOD are listed so
+# All four test-lane entries merge.sh drops for a no-.busted mod are listed so
 # the "test lane disabled" assertions below exercise every one of them.
 cat > .scaffold-sync.paths <<'EOF'
 verbatim.txt
@@ -67,9 +67,9 @@ ln -s AGENTS.md LINK.md                       # tracked symlink -> merge.sh must
 printf 'AAAA\n'          > bin.dat            # theirs turns this into NUL bytes -> merge-file hard error
 # dropped/ leaves the list in theirs (a directory entry, so it is expanded)
 mkdir -p dropped
-printf 'same\n'          > dropped/same.txt   # theirs deletes; MOD unchanged -> DELETE
-printf 'mod\n'           > dropped/mod.txt    # theirs deletes; MOD modified -> CONFLICT
-printf 'kept\n'          > dropped/kept.txt   # theirs keeps (now MOD-owned) -> untouched
+printf 'same\n'          > dropped/same.txt   # theirs deletes; mod unchanged -> DELETE
+printf 'mod\n'           > dropped/mod.txt    # theirs deletes; mod modified -> CONFLICT
+printf 'kept\n'          > dropped/kept.txt   # theirs keeps (now mod-owned) -> untouched
 # theirs bumps only `uses:` refs (pinned*), or a ref plus a new step (mixed.yml)
 wf() { # wf <ref> [extra-step]
   printf 'jobs:\n  a:\n    steps:\n      - uses: o/x@%s # v1\n      - name: y\n        uses: o/y@%s # v1\n%s' "$1" "$1" "${2:-}"
@@ -78,7 +78,7 @@ wf aaa > .github/workflows/pinned.yml
 wf aaa > .github/workflows/pinned-same.yml
 wf aaa > .github/workflows/mixed.yml
 # Renovate-managed versions in mise.toml / *.pkl, in three shapes: version-only
-# (pinned), versions plus other changes (mixed), and a line the MOD removed.
+# (pinned), versions plus other changes (mixed), and a line the mod removed.
 mkdir -p pinned mixed removed
 mise() { # mise <hk> <foo> <lua> <busted> <min-age> [extra-tool-line]
   printf '[tools]\nhk = "%s"\n"github:o/foo" = "%s" # keep\nlua = "%s"\n%s\n[hooks]\npostinstall = [\n  %s\n]\n[settings]\nminimum_release_age = "%s"\n' \
@@ -101,7 +101,7 @@ git_quiet rm -q gone.txt                       # theirs deletes the file
 printf 'new v1\n'        > newfile.txt          # theirs adds a file
 printf 'build v2\n'      > tasks/build          # theirs-only change
 printf 'test v2\n'       > tasks/test           # theirs changes a disabled-lane file
-printf '#!/bin/sh\necho hi\n' > tasks/newexec   # theirs adds an executable the MOD lacks -> CREATE
+printf '#!/bin/sh\necho hi\n' > tasks/newexec   # theirs adds an executable the mod lacks -> CREATE
 chmod +x tasks/newexec
 printf '\x00\x01\x02BBBB\n'   > bin.dat          # NUL bytes -> git merge-file hard error -> ERROR
 grep -vx 'dropped/' .scaffold-sync.paths > paths.tmp && mv paths.tmp .scaffold-sync.paths
@@ -119,7 +119,7 @@ mise 1.1.0 1.1.0 5.2 2.4.0 5d > removed/mise.toml
 git_quiet add -A
 git_quiet commit -m ":sparkles: theirs"
 
-# --- build the derived MOD -------------------------------------------------
+# --- build the derived mod -------------------------------------------------
 mod=$work/mod
 mkdir -p "$mod"
 cd "$mod" || exit 1
@@ -132,7 +132,7 @@ printf 'build v1\nlocal tweak\n' > tasks/build  # ours changed too -> conflict
 printf 'AAAAlocal\n'     > bin.dat              # all three differ -> merge-file runs and hard-errors
 mkdir -p dropped
 printf 'same\n'          > dropped/same.txt     # unchanged from base
-printf 'mod\nlocal\n'    > dropped/mod.txt      # MOD changed it
+printf 'mod\nlocal\n'    > dropped/mod.txt      # Mod changed it
 printf 'kept\n'          > dropped/kept.txt     # unchanged from base
 mkdir -p .github/workflows
 wf aaa > .github/workflows/pinned.yml           # Renovate has not caught up -> PIN, untouched
@@ -142,7 +142,7 @@ mkdir -p pinned mixed removed
 mise 1.0.0 1.0.0 5.2 2.3.0 3d > pinned/mise.toml    # Renovate has not caught up -> PIN, untouched
 pkl 1.0.0                      > pinned/hk.pkl
 mise 1.5.0 1.0.0 5.2 2.3.1 3d > mixed/mise.toml     # Renovate bumped hk and busted past theirs -> keep
-mise 1.0.0 1.0.0 5.2 2.3.0 3d | grep -v '"github:o/foo"' > removed/mise.toml  # MOD dropped foo
+mise 1.0.0 1.0.0 5.2 2.3.0 3d | grep -v '"github:o/foo"' > removed/mise.toml  # mod dropped foo
 git_quiet add -A
 git_quiet commit -m ":seedling: mod"
 # no .busted, no .github/workflows/spec.yml -> test lane disabled
@@ -155,7 +155,7 @@ check "mergeable.txt merged clean"  "CLEAN mergeable.txt"     "$(line mergeable.
 check "gone.txt deleted"            "DELETE gone.txt"         "$(line gone.txt)"
 check "newfile.txt created"         "CREATE newfile.txt"      "$(line newfile.txt)"
 check "tasks/build conflict"        "CONFLICT tasks/build"    "$(line tasks/build)"
-# No .busted in the MOD -> merge.sh must not emit any line (CREATE/CLEAN least
+# No .busted in the mod -> merge.sh must not emit any line (CREATE/CLEAN least
 # of all) for the four test-lane paths, even when the scaffold changed one.
 check "spec.yml skipped (no test lane)"     "" "$(line '.github/workflows/spec.yml')"
 check ".busted skipped (no test lane)"      "" "$(line '.busted')"
@@ -173,7 +173,7 @@ fi
 
 # --- paths dropped from the sync list ---------------------------------------
 # dropped/ is listed at the baseline but not at HEAD. Files the scaffold also
-# deleted follow a scaffold-side deletion; one it still has stays the MOD's.
+# deleted follow a scaffold-side deletion; one it still has stays the mod's.
 check "dropped/same.txt deleted"        "DELETE dropped/same.txt"   "$(line 'dropped/same.txt')"
 check "dropped/same.txt removed"        "absent" "$([ -e dropped/same.txt ] && echo present || echo absent)"
 check "dropped/mod.txt conflict"        "CONFLICT dropped/mod.txt"  "$(line 'dropped/mod.txt')"
@@ -183,7 +183,7 @@ check "dropped/kept.txt content kept"   "kept" "$(cat dropped/kept.txt)"
 
 # --- exec bit on CREATE ----------------------------------------------------
 # tasks/newexec is added scaffold-side only and is 100755 there; the CREATE
-# branch must chmod +x *before* `git add` so the mode reaches the MOD index.
+# branch must chmod +x *before* `git add` so the mode reaches the mod index.
 check "tasks/newexec created"        "CREATE tasks/newexec" "$(line 'tasks/newexec')"
 check "tasks/newexec staged 100755"  "100755" "$(git -C "$mod" ls-files -s tasks/newexec | awk '{print $1}')"
 
@@ -206,7 +206,7 @@ check "bin.dat not staged"            "" "$(git -C "$mod" diff --cached --name-o
 check "bin.dat not truncated to empty" "AAAAlocal" "$(cat "$mod/bin.dat")"
 
 # --- workflow `uses:` pin bumps ---------------------------------------------
-# A change of only `uses:` refs is left to the MOD's Renovate; one that also
+# A change of only `uses:` refs is left to the mod's Renovate; one that also
 # changes anything else merges as usual, pins included.
 check "pinned.yml left for Renovate"  "PIN .github/workflows/pinned.yml" "$(line '.github/workflows/pinned.yml')"
 check "pinned.yml untouched"          "$(wf aaa)" "$(cat .github/workflows/pinned.yml)"
@@ -221,7 +221,7 @@ check "pinned/mise.toml untouched"  "$(mise 1.0.0 1.0.0 5.2 2.3.0 3d)" "$(cat pi
 check "pinned/hk.pkl left for Renovate"    "PIN pinned/hk.pkl" "$(line 'pinned/hk.pkl')"
 check "pinned/hk.pkl untouched"     "$(pkl 1.0.0)" "$(cat pinned/hk.pkl)"
 check "mixed/mise.toml merged"      "CLEAN mixed/mise.toml" "$(line 'mixed/mise.toml')"
-# hk, foo and busted keep this MOD's versions; lua, [settings] and the new tool come from the scaffold.
+# hk, foo and busted keep this mod's versions; lua, [settings] and the new tool come from the scaffold.
 check "mixed/mise.toml content"     "$(mise 1.5.0 1.0.0 5.4 2.3.1 5d 'bar = "9.0.0"')" "$(cat mixed/mise.toml)"
 # foo was removed here, so its scaffold-side bump must not bring the line back.
 check "removed/mise.toml merged"    "CLEAN removed/mise.toml" "$(line 'removed/mise.toml')"

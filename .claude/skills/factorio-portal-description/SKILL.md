@@ -1,18 +1,18 @@
 ---
 name: factorio-portal-description
-description: Overwrites the Factorio MOD portal description with the repository's README.md via factorix. Use when the user wants to update, sync, push, or publish the MOD portal description (or "portal page") from README.md, even if they do not name the command.
+description: Overwrites the Factorio mod portal description with the repository's README.md via factorix. Use when the user wants to update, sync, push, or publish the mod portal description (or "portal page") from README.md, even if they do not name the command.
 allowed-tools: [Bash, Read]
 ---
 
-# Factorio MOD Portal Description Sync Skill
+# Factorio Mod Portal Description Sync Skill
 
-Replaces the description on the Factorio MOD portal with the contents of `README.md` in the current MOD repository.
+Replaces the description on the Factorio mod portal with the contents of `README.md` in the current mod repository.
 
 ## Instructions
 
-**IMPORTANT: When using this skill, announce to the user**: "Using factorio-portal-description skill to update the MOD portal description."
+**IMPORTANT: When using this skill, announce to the user**: "Using factorio-portal-description skill to update the mod portal description."
 
-### 1. Resolve the MOD name
+### 1. Resolve the mod name
 
 Run from the repository root. The portal name is the `name` field of `info.json`, not the directory name.
 
@@ -45,4 +45,4 @@ The first run can be slow because fnox has to fetch the secret, and it may promp
 
 ### 4. Report
 
-Report the MOD name and whether the command succeeded. On failure, show the error output as is.
+Report the mod name and whether the command succeeded. On failure, show the error output as is.
