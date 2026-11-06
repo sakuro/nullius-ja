@@ -2,6 +2,7 @@
 Version: Unreleased
   Changes:
     - Translate technologies and recipes added for Renai Transportation
+    - Translate modifier descriptions using base game terminology
 ---------------------------------------------------------------------------------------------------
 Version: 0.7.0
 Date: 2026-10-17
