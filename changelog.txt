@@ -4,6 +4,7 @@ Version: Unreleased
     - Translate technologies and recipes added for Renai Transportation
     - Translate modifier descriptions using base game terminology
     - Translate leftover English in the victory message, configurable pump description, and construction-only and decompression names
+    - Translate the fluid sequestration technology description and fix an untranslated "or" in the fluid compressible description
 ---------------------------------------------------------------------------------------------------
 Version: 0.7.0
 Date: 2026-10-17
