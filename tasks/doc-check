@@ -22,8 +22,8 @@ done < <(
   } | sed 's|^\./||' | sort
 )
 
-# The checker rejects an empty file list, but a MOD without Lua of its own (a
-# locale-only MOD, or the scaffold itself) has nothing to check.
+# The checker rejects an empty file list, but a mod without Lua of its own (a
+# locale-only mod, or the scaffold itself) has nothing to check.
 if [ ${#files[@]} -eq 0 ]; then
   exit 0
 fi

@@ -10,7 +10,7 @@
 # Any other path has none, so the files never count as pin-only.
 #
 # Exits 0 when the files are equal once those versions are dropped, 1 otherwise.
-# Such a change is a version bump that each derived MOD's Renovate applies on its
+# Such a change is a version bump that each derived mod's Renovate applies on its
 # own; for a workflow, a drift run with GITHUB_TOKEN could not push it anyway
 # (no `workflows` permission). scaffold-drift.yml and merge.sh both leave it alone.
 

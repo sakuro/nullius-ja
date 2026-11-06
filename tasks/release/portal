@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Publish MOD to Factorio MOD Portal"
+#MISE description="Publish mod to Factorio mod portal"
 #MISE depends=["build"]
 set -euo pipefail
 

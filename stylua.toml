@@ -1,5 +1,5 @@
 # stylua defaults to Luau, which cannot parse Lua 5.2's `::label::` goto
-# syntax; Factorio runs 5.2, and a MOD using `::continue::` fails to format
+# syntax; Factorio runs 5.2, and a mod using `::continue::` fails to format
 # with "expected label name after `::`".
 syntax = "Lua52"
 column_width = 120

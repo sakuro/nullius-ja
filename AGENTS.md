@@ -16,11 +16,19 @@ Run `mise tasks ls -l` to list tasks defined in this project. The `-l` (`--local
 
 ## Build and Install
 
-- `mise run install` - Install to local Factorio MOD directory. Uses `git archive` internally, so only committed files are included; commit changes before running.
+- `mise run install` - Install to local Factorio mod directory. Uses `git archive` internally, so only committed files are included; commit changes before running.
 
 ## Temporary files
 
 Use the `tmp/` directory for temporary files. Create it if it doesn't exist. It is gitignored.
+
+## Locale
+
+For a non-English locale, take item, entity, and term names from the game's own locale for that language instead of translating them yourself. They live in `data/<mod>/locale/<lang>/` of the Factorio installation, where `<mod>` is `base`, `core`, or one of the expansion mods (`space-age`, `quality`, `elevated-rails`, `recycler`); look in the one that defines the thing.
+
+## Locale
+
+For a non-English locale, take item, entity, and term names from the game's own locale for that language instead of translating them yourself. They live in `data/<mod>/locale/<lang>/` of the Factorio installation, where `<mod>` is `base`, `core`, or one of the expansion mods (`space-age`, `quality`, `elevated-rails`, `recycler`); look in the one that defines the thing.
 
 ## Release
 
@@ -50,7 +58,7 @@ Do not create a section for the next release version directly; version bumping i
 - [Factorio API](https://lua-api.factorio.com/latest/)
 - [Factorio Wiki](https://wiki.factorio.com/)
 - Game directories (mod dir, user dir, data dir, etc.): `factorix path --json | jq -r .<field>` (e.g. `.mod_dir`)
-- Other MODs: to investigate a MOD's contents, download it with `factorix mod download <mod-name> -d tmp` rather than guessing; if its source is on GitHub or Codeberg, refer to that as well
+- Other mods: to investigate a mod's contents, download it with `factorix mod download <mod-name> -d tmp` rather than guessing; if its source is on GitHub or Codeberg, refer to that as well
 - Game terminology: use the wording in the locale files under the data directory (`<data_dir>/<base|space-age|...>/locale/<lang>/*.cfg`) so that terms match the game
 - Terms a player never sees are not a precedent: nullius renames or hides much of the base game, and overrides names of entities from its dependencies. Check which name is actually displayed (see `prototypes/override_mod.lua` in nullius) before reusing one. `locale/*/informatron.cfg` is the main trap: nullius dropped its Informatron dependency in 1.2.16 and is moving that documentation into tips and tricks, so those pages are unreachable in a stock install and keep 1.x wording.
 - Whether a term is visible is decided by the locale section it sits in: `[*-name]`, `[*-description]`, `[entity-status]`, `[factoriopedia]` and the like reach the player, while nullius' `[nullius]` section only feeds informatron pages. Search `core` as well as `base` — the lab reads サイエンスパック不足 (`[entity-status] missing-science-packs`) even though nullius renames every pack item to 地質学研究 and the like.

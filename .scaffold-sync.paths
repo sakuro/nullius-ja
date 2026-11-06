@@ -1,4 +1,4 @@
-# Shared-infrastructure paths a derived MOD keeps in sync with factorio-mod-scaffold.
+# Shared-infrastructure paths a derived mod keeps in sync with factorio-mod-scaffold.
 # One literal path (or directory) per line. Consumed by merge.sh and by
 # .github/workflows/scaffold-drift.yml's cheap pre-check.
 

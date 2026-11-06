@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: write      # Required for git tag push
 
-    environment: release   # Links to MOD Portal API key in protected environment
+    environment: release   # Links to mod portal API key in protected environment
 
     steps:
     - name: Checkout code

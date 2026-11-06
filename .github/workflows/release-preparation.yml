@@ -111,7 +111,7 @@ jobs:
 
         - [ ] **changelog.txt**: Verify all notable changes are documented
         - [ ] **Breaking changes**: If any, ensure they are clearly documented in changelog
-        - [ ] **Dependencies**: Check if any MOD dependency updates are needed in info.json
+        - [ ] **Dependencies**: Check if any mod dependency updates are needed in info.json
         - [ ] **Factorio version**: Verify factorio_version in info.json is correct
         - [ ] **README**: Ensure README.md reflects any new features or changes
 
@@ -119,8 +119,8 @@ jobs:
 
         After merging this PR, the release workflow will automatically:
         - Use the git tag v${{ github.event.inputs.version }} (already created on this branch)
-        - Build the MOD package from the tagged commit
-        - Upload to Factorio MOD Portal
+        - Build the mod package from the tagged commit
+        - Upload to Factorio mod portal
         - Create GitHub release with assets
 
         EOF
