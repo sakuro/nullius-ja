@@ -1,11 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: Unreleased
   Changes:
-    - Translate technologies and recipes added for Renai Transportation
-    - Translate modifier descriptions using base game terminology
-    - Translate leftover English in the victory message, configurable pump description, and construction-only and decompression names
-    - Translate the remaining untranslated names and descriptions: mod description, targeting remote, conscription, condensation and others
-    - Translate the fluid sequestration technology description and fix an untranslated "or" in the fluid compressible description
+    - Translate the remaining untranslated entries, including technologies and recipes added for Renai Transportation, modifier descriptions (using base game terminology), the mod description and the targeting remote
+    - Fix English left in translated entries (victory message, configurable pump, fluid sequestration and compressible descriptions) and drop the "(新規)" marker
 ---------------------------------------------------------------------------------------------------
 Version: 0.7.0
 Date: 2026-10-17
