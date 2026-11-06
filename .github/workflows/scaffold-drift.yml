@@ -5,7 +5,7 @@ name: Scaffold Drift
 
 on:
   schedule:
-    - cron: "30 18 * * 4"   # Fri 03:30 JST (Thu 18:30 UTC); same literal in every derived MOD
+    - cron: "30 18 * * 4"   # Fri 03:30 JST (Thu 18:30 UTC); same literal in every derived mod
   workflow_dispatch:
     inputs:
       debug:
@@ -56,7 +56,7 @@ jobs:
         run: |
           # No .scaffold-sync.json (e.g. the scaffold repo itself) -> nothing to sync.
           if [ ! -f .scaffold-sync.json ]; then
-            echo "no .scaffold-sync.json - not a derived MOD, skipping." >&2
+            echo "no .scaffold-sync.json - not a derived mod, skipping." >&2
             echo "drift=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -75,7 +75,7 @@ jobs:
           mapfile -t globs < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' .scaffold-sync.paths)
           changed=$(git -C /tmp/scaffold diff --name-only "$base" origin/HEAD -- "${globs[@]}")
           # A file whose change is only versions Renovate manages (workflow `uses:`
-          # refs, mise.toml and *.pkl versions) is not drift: this MOD's Renovate
+          # refs, mise.toml and *.pkl versions) is not drift: this mod's Renovate
           # converges it, and a workflow change could not be pushed by this run anyway.
           mkdir /tmp/pins
           for helper in pin_only.sh pins.pl; do
@@ -106,7 +106,7 @@ jobs:
             Invoke the resolve-scaffold-drift skill. Open or update a PR on
             branch chore/scaffold-drift. Do nothing if there is no drift.
           # --model: a mechanical three-way merge + PR does not need the default
-          # (Opus); Sonnet is a few times cheaper for a weekly job across MODs.
+          # (Opus); Sonnet is a few times cheaper for a weekly job across mods.
           # --allowedTools: agent mode grants no tools by default and the skill
           # drives git / gh / merge.sh. Bash is unscoped here (first-party skill,
           # ephemeral runner, scoped GITHUB_TOKEN); scope it to Bash(git:*),

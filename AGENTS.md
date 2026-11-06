@@ -26,6 +26,10 @@ Use the `tmp/` directory for temporary files. Create it if it doesn't exist. It 
 
 For a non-English locale, take item, entity, and term names from the game's own locale for that language instead of translating them yourself. They live in `data/<mod>/locale/<lang>/` of the Factorio installation, where `<mod>` is `base`, `core`, or one of the expansion mods (`space-age`, `quality`, `elevated-rails`, `recycler`); look in the one that defines the thing.
 
+## Locale
+
+For a non-English locale, take item, entity, and term names from the game's own locale for that language instead of translating them yourself. They live in `data/<mod>/locale/<lang>/` of the Factorio installation, where `<mod>` is `base`, `core`, or one of the expansion mods (`space-age`, `quality`, `elevated-rails`, `recycler`); look in the one that defines the thing.
+
 ## Release
 
 Releases are handled by GitHub Actions workflows. Do not run `mise run release:*` tasks manually.

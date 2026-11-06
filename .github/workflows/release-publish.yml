@@ -1,6 +1,6 @@
 name: Release Publish
 
-# This workflow handles the actual MOD publishing after PR merge.
+# This workflow handles the actual mod publishing after PR merge.
 # Most validations are already performed by the Release Validation workflow.
 
 env:
@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: write      # Required for GitHub Release creation
 
-    environment: release   # Links to MOD Portal API key in protected environment
+    environment: release   # Links to mod portal API key in protected environment
 
     steps:
     - name: Extract version from branch name
@@ -52,7 +52,7 @@ jobs:
     - name: Setup mise
       uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5
 
-    - name: Build and upload MOD to Factorio MOD portal
+    - name: Build and upload mod to Factorio mod portal
       env:
         FACTORIO_API_KEY: ${{ secrets.FACTORIO_API_KEY }}
       run: mise run release:portal
@@ -65,5 +65,5 @@ jobs:
     - name: Post-release summary
       run: |
         echo "🎉 Release ${{ steps.version.outputs.tag }} published successfully!"
-        echo "- MOD built from tagged commit and published to Factorio MOD portal"
+        echo "- Mod built from tagged commit and published to Factorio mod portal"
         echo "- GitHub release created with changelog and assets"
