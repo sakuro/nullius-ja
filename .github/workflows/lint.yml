@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
     - name: Setup mise
-      uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5
+      uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5
 
     - name: Check Lua formatting
       run: mise run format-check
@@ -33,7 +33,7 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y libreadline-dev
 
     - name: Setup mise
-      uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5
+      uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5
 
     - name: Lint Lua code
       run: mise run lint
