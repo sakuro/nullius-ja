@@ -21,6 +21,7 @@ CONTRIBUTING.md
 tasks/build
 tasks/clean
 tasks/install
+tasks/install-gh-actions-lock
 tasks/test
 tasks/format
 tasks/format-check

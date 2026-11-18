@@ -58,6 +58,15 @@
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "lunarmodules/luacheck",
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/install-gh-actions-lock$/"],
+      "matchStrings": [
+        "gh extension install github/gh-actions-lock --pin (?<currentValue>v[0-9.]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "github/gh-actions-lock"
     }
   ]
 }

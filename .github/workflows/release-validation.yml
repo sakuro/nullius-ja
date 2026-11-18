@@ -24,7 +24,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      uses: actions/checkout@v7.0.1
       with:
         # The release tag is moved to HEAD below. On pull_request the default
         # ref is the synthetic merge commit, which never lands on main.
@@ -110,14 +110,14 @@ jobs:
         fi
 
     - name: Setup mise
-      uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5
+      uses: jdx/mise-action@v5.2.8
 
     - name: Validate changelog.txt format
       run: factorix mod changelog check --release
 
     - name: Set git user for tag update
       if: github.event.action == 'synchronize'  # When new commits are pushed to PR
-      uses: git-actions/set-user@49fa9362373dabe0bfcbdb5e8d4da08045ebf6f8 # v1
+      uses: git-actions/set-user@v1.0.0
 
     - name: Update release tag to latest commit
       if: github.event.action == 'synchronize'  # When new commits are pushed to PR
