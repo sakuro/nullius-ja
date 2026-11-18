@@ -33,7 +33,7 @@ jobs:
         echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Checkout release tag
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      uses: actions/checkout@v7.0.1
       with:
         ref: ${{ steps.version.outputs.tag }}
         fetch-depth: 0
@@ -50,7 +50,7 @@ jobs:
         echo "✅ Version consistency verified: $FILE_VERSION"
 
     - name: Setup mise
-      uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5
+      uses: jdx/mise-action@v5.2.8
 
     - name: Build and upload mod to Factorio mod portal
       env:
