@@ -50,7 +50,7 @@ jobs:
         echo "✅ Version consistency verified: $FILE_VERSION"
 
     - name: Setup mise
-      uses: jdx/mise-action@v5.2.8
+      uses: jdx/mise-action@v5.2.9
 
     - name: Build and upload mod to Factorio mod portal
       env:

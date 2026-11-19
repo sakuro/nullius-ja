@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v7.0.1
 
     - name: Setup mise
-      uses: jdx/mise-action@v5.2.8
+      uses: jdx/mise-action@v5.2.9
 
     - name: Check Lua formatting
       run: mise run format-check
@@ -33,7 +33,7 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y libreadline-dev
 
     - name: Setup mise
-      uses: jdx/mise-action@v5.2.8
+      uses: jdx/mise-action@v5.2.9
 
     - name: Lint Lua code
       run: mise run lint
@@ -55,7 +55,7 @@ jobs:
         persist-credentials: false
 
     - name: Setup mise
-      uses: jdx/mise-action@v5.2.8
+      uses: jdx/mise-action@v5.2.9
 
     - name: Install gh-actions-lock
       run: mise run install-gh-actions-lock
