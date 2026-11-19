@@ -6,21 +6,21 @@ workflows:
     '.github/workflows/create-update-locale-pr.yml':
         - 'actions/checkout@v7.0.1'
         - 'git-actions/set-user@v1.0.0'
-        - 'jdx/mise-action@v5.2.8'
+        - 'jdx/mise-action@v5.2.9'
     '.github/workflows/lint.yml':
         - 'actions/checkout@v7.0.1'
-        - 'jdx/mise-action@v5.2.8'
+        - 'jdx/mise-action@v5.2.9'
     '.github/workflows/release-preparation.yml':
         - 'actions/checkout@v7.0.1'
         - 'git-actions/set-user@v1.0.0'
-        - 'jdx/mise-action@v5.2.8'
+        - 'jdx/mise-action@v5.2.9'
     '.github/workflows/release-publish.yml':
         - 'actions/checkout@v7.0.1'
-        - 'jdx/mise-action@v5.2.8'
+        - 'jdx/mise-action@v5.2.9'
     '.github/workflows/release-validation.yml':
         - 'actions/checkout@v7.0.1'
         - 'git-actions/set-user@v1.0.0'
-        - 'jdx/mise-action@v5.2.8'
+        - 'jdx/mise-action@v5.2.9'
     '.github/workflows/scaffold-drift.yml':
         - 'actions/checkout@v7.0.1'
         - 'anthropics/claude-code-action@v1.0.276'
@@ -42,9 +42,9 @@ dependencies:
         commit: 'sha1-49fa9362373dabe0bfcbdb5e8d4da08045ebf6f8'
         owner_id: 86878309
         repo_id: 382619853
-    'jdx/mise-action@v5.2.8':
-        ref: 'v5.2.8'
-        commit: 'sha1-d5574b52816a478f9d4e6529a3f6ff17a8a36785'
+    'jdx/mise-action@v5.2.9':
+        ref: 'v5.2.9'
+        commit: 'sha1-236a21c3b91f5db6d4e174b348674a0f0caac06d'
         owner_id: 216188
         repo_id: 738284564
     'oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6':

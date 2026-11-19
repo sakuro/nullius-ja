@@ -56,7 +56,7 @@ jobs:
         (rm info.json && jq '.version = "${{ github.event.inputs.version }}"' > info.json) < info.json
 
     - name: Setup mise
-      uses: jdx/mise-action@v5.2.8
+      uses: jdx/mise-action@v5.2.9
 
     - name: Prepare new changelog section for the target version
       env:
