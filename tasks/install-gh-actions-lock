@@ -5,4 +5,4 @@ set -euo pipefail
 # The single place the extension version is pinned; lint.yml's verify-lockfile
 # job installs it through this task. --force makes a rerun move an existing
 # install to this version instead of failing.
-gh extension install github/gh-actions-lock --pin v0.4.1 --force
+gh extension install github/gh-actions-lock --pin v0.5.0 --force
