@@ -1,7 +1,7 @@
 amends "package://github.com/jdx/hk/releases/download/v2.13.0/hk@2.13.0#/Config.pkl"
 
 import "package://github.com/jdx/hk/releases/download/v2.13.0/hk@2.13.0#/Builtins.pkl"
-import "package://github.com/sakuro/git-hooks/releases/download/v0.3.0/git-hooks@0.3.0#/Steps.pkl" as GitHooks
+import "package://github.com/sakuro/git-hooks/releases/download/v0.3.1/git-hooks@0.3.1#/Steps.pkl" as GitHooks
 
 hooks {
   ["commit-msg"] {
