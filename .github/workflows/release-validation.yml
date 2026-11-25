@@ -110,7 +110,7 @@ jobs:
         fi
 
     - name: Setup mise
-      uses: jdx/mise-action@v5.2.10
+      uses: jdx/mise-action@v5.3.0
 
     - name: Validate changelog.txt format
       run: factorix mod changelog check --release

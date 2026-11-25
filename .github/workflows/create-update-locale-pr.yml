@@ -23,7 +23,7 @@ jobs:
         uses: git-actions/set-user@v1.0.0
 
       - name: Setup mise
-        uses: jdx/mise-action@v5.2.10
+        uses: jdx/mise-action@v5.3.0
 
       - name: Set up dummy Factorio runtime for factorix
         # `factorix mod show` also reports local install status, which requires a
