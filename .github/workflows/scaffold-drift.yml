@@ -104,7 +104,8 @@ jobs:
           allowed_bots: "github-actions[bot]"
           prompt: >
             Invoke the resolve-scaffold-drift skill. Clone the scaffold to
-            /tmp/scaffold-clone. Open or update a PR on branch
+            /tmp/scaffold-clone and leave it in place; the runner is
+            discarded after the job. Open or update a PR on branch
             chore/scaffold-drift. Do nothing if there is no drift.
           # --model: a mechanical three-way merge + PR does not need the default
           # (Opus); Sonnet is a few times cheaper for a weekly job across mods.
@@ -113,7 +114,8 @@ jobs:
           # reach curl, env, `gh api` or `gh auth token`. The fixed clone path in
           # the prompt is what lets merge.sh be allowed by its full path. This
           # narrows the surface but is not a sandbox: git can still run commands
-          # through `-c alias.x=!...`.
+          # through `-c alias.x=!...`. No `rm` for the clone: Claude Code asks for
+          # approval to delete outside the working directory even when allowed.
           claude_args: >-
             --model claude-sonnet-5 --permission-mode acceptEdits
-            --allowedTools 'Read,Write,Edit,Glob,Grep,TodoWrite,Skill,Bash(git:*),Bash(gh auth status),Bash(gh pr view:*),Bash(gh pr create:*),Bash(gh pr edit:*),Bash(bash /tmp/scaffold-clone/.claude/skills/resolve-scaffold-drift/merge.sh:*),Bash(date:*),Bash(jq:*),Bash(rm -rf /tmp/scaffold-clone)'
+            --allowedTools 'Read,Write,Edit,Glob,Grep,TodoWrite,Skill,Bash(git:*),Bash(gh auth status),Bash(gh pr view:*),Bash(gh pr create:*),Bash(gh pr edit:*),Bash(bash /tmp/scaffold-clone/.claude/skills/resolve-scaffold-drift/merge.sh:*),Bash(date:*),Bash(jq:*)'
