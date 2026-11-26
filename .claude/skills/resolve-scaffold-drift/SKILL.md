@@ -44,9 +44,10 @@ Create a TODO per numbered step.
 
 4. **Mechanical merge.** Run
    `bash <clone>/.claude/skills/resolve-scaffold-drift/merge.sh <clone> <baseline-sha>`
-   from the repo root — invoke it through `bash` explicitly. `merge.sh` needs
-   bash ≥ 4 (`declare -A`); on macOS use a non-system bash (Homebrew etc.),
-   because bash 3.2 makes it exit 2 without merging anything. It applies clean
+   from the repo root — invoke it through `bash` explicitly. Do not check the
+   bash version beforehand: `merge.sh` needs bash ≥ 4 (`declare -A`) and, on an
+   older one (macOS's system bash 3.2), says so and exits 2 without merging
+   anything. Only then rerun it with a newer bash (Homebrew etc.). It applies clean
    results and prints one line per path:
    `CLEAN` / `CREATE` / `DELETE` / `CONFLICT` / `PIN` / `SKIP`. Keep the output.
    `PIN` marks a file whose scaffold-side change is only versions Renovate
