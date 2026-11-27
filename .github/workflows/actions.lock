@@ -23,16 +23,16 @@ workflows:
         - 'jdx/mise-action@v5.3.0'
     '.github/workflows/scaffold-drift.yml':
         - 'actions/checkout@v7.0.1'
-        - 'anthropics/claude-code-action@v1.0.286'
+        - 'anthropics/claude-code-action@v1.0.289'
 dependencies:
     'actions/checkout@v7.0.1':
         ref: 'v7.0.1'
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
-    'anthropics/claude-code-action@v1.0.286':
-        ref: 'v1.0.286'
-        commit: 'sha1-acfe7992852970efb4fee683d63d628e3e52df67'
+    'anthropics/claude-code-action@v1.0.289':
+        ref: 'v1.0.289'
+        commit: 'sha1-eb56b6666facdbd501035f4a0269d8caee2e7a8b'
         owner_id: 76263028
         repo_id: 986421638
         uses:
