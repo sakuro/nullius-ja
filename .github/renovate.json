@@ -21,6 +21,12 @@
       "groupName": "hk"
     },
     {
+      "matchDepNames": [
+        "sakuro/git-hooks"
+      ],
+      "minimumReleaseAge": null
+    },
+    {
       "matchManagers": ["mise"],
       "matchDepNames": ["lua"],
       "enabled": false
